@@ -45,3 +45,28 @@ Experience.tsx (메인 씬 컨트롤러).
 GrassShader Material 코드를 포함한 잔디 컴포넌트.
 GSAP 카메라 전환 로직이 담긴 핸들러 코드.
 ```
+
+#### Demo2
+- Gemini Pro 3.1로 제작
+- 사용한 프롬프트는 다음과 같음
+ ```
+[역할 설정]
+너는 예술적 감각이 뛰어난 시니어 프론트엔드 개발자이자 R3F(React Three Fiber) 아티스트야. '어린왕자'의 감성을 담아, 사용자의 GitHub 프로필을 하나의 작은 소행성계로 여행하는 몰입형 웹사이트를 개발해야 해. 조잡한 디테일은 배제하고, 세련된 미니멀리즘과 감성적인 인터랙션에 집중해줘.
+[핵심 아트 디렉션]
+The Little Prince Vibe: 행성들은 작고 귀엽지만(Small Radius), 각기 고유한 색감과 은은한 대기 광채(Atmospheric Glow)를 가져야 함.
+HDR & Lighting: @react-three/drei의 Environment를 사용하여 고품질 HDR 조명을 적용해. 물리 기반 렌더링(PBR)을 통해 클레이 재질이 빛을 부드럽게 머금도록 설정해줘.
+Clean & Minimal: 불필요한 UI는 숨기고, 오직 핵심적인 메타포(망원경, 행성, 잔디)만 아름답게 배치해.
+[기술 요구 사항 (React 기반)]
+Post-processing (HDR/Bloom): @react-three/postprocessing을 사용해. 행성 주변에 은은한 Bloom 효과를 주어 꿈꾸는 듯한 분위기를 연출하되, 과하지 않게(Intensity 0.5~1.0) 조절해줘.
+The Journey Logic (GSAP): 망원경을 선택하면 카메라가 단순히 이동하는 게 아니라, '시공간을 유영하듯' 부드러운 곡선을 그리며 망원경 속으로 빨려 들어가야 해.
+Grass Detail: 깃허브 잔디(Contribution)는 어린왕자의 장미 정원처럼 표현해. InstancedMesh를 사용하며, 바람에 부드럽게 물결치는 셰이더 애니메이션을 포함해.
+Data Connection: 사용자의 GitHub 데이터를 기반으로 행성을 생성하되, 레포지토리 이름이 행성 위에 아주 얇고 세련된 타이포그래피로 떠 있도록 해줘.
+[코드 구조 가이드]
+App.tsx: Canvas 설정, HDR 환경 구축, EffectComposer 적용.
+Stage.tsx: 메인 랜딩 보드(클레이 보드, 우주인, 망원경, 살랑이는 잔디) 관리.
+Universe.tsx: 전환 후 나타날 행성들의 군집. 각 행성은 Planet 컴포넌트로 독립화.
+useStore.ts (Zustand): isTraveling, selectedPlanet, cameraLookAt 등 여행의 상태를 관리.
+[애니메이션 디테일 요청]
+모든 객체가 나타날 때 Spring 애니메이션을 사용하여 쫀득하고 생동감 있게 등장하게 해줘.
+카메라가 우주로 진입할 때 Starfield 입자들이 사용자 옆을 스쳐 지나가는 'Warp Speed' 연출을 추가해.
+```
