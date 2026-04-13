@@ -1,0 +1,366 @@
+/* ===== DESIGN TOKENS ===== */
+:root {
+  /* Clay / Dashboard Colors */
+  --clay-bg: #F5E6D0;
+  --clay-board: #EDD9C0;
+  --clay-shadow: rgba(0, 0, 0, 0.15);
+  --clay-highlight: rgba(255, 255, 255, 0.6);
+
+  /* Space Colors */
+  --space-bg: #050510;
+  --space-deep: #0a0a1a;
+  --nebula-purple: #6b21a8;
+  --nebula-blue: #1e40af;
+  --star-white: #f0f0ff;
+
+  /* Grass / Contribution Colors */
+  --grass-0: #2d1f0e;
+  --grass-1: #4a7c3f;
+  --grass-2: #5ca64c;
+  --grass-3: #73d056;
+  --grass-4: #8aff6a;
+
+  /* UI Colors */
+  --ui-text: #f8f4ef;
+  --ui-text-muted: rgba(248, 244, 239, 0.6);
+  --ui-accent: #c49b68;
+  --ui-accent-glow: rgba(196, 155, 104, 0.4);
+  --ui-glass-bg: rgba(255, 255, 255, 0.06);
+  --ui-glass-border: rgba(255, 255, 255, 0.1);
+  --ui-glass-bg-light: rgba(255, 255, 255, 0.12);
+
+  /* Typography */
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--space-bg);
+  font-family: var(--font-body);
+  color: var(--ui-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== CANVAS CONTAINER ===== */
+.canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* ===== UI OVERLAY ===== */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-2xl);
+}
+
+.overlay * {
+  pointer-events: auto;
+}
+
+/* ===== TITLE SECTION ===== */
+.title-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.title-main {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--ui-text) 0%, var(--ui-accent) 50%, #e8c88a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.title-sub {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+  font-weight: 300;
+  color: var(--ui-text-muted);
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+/* ===== HINT TEXT ===== */
+.hint-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.hint-text {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--ui-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hint-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
+}
+
+/* ===== GLASSMORPHISM CARD ===== */
+.glass-card {
+  background: var(--ui-glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--ui-glass-border);
+  border-radius: 20px;
+  padding: var(--space-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== PLANET INFO PANEL ===== */
+.planet-info {
+  position: fixed;
+  bottom: var(--space-2xl);
+  right: var(--space-2xl);
+  width: 360px;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.planet-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.planet-info-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.planet-info-language {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.planet-info-language-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.planet-info-desc {
+  font-size: 0.9rem;
+  color: var(--ui-text-muted);
+  line-height: 1.6;
+  margin-bottom: var(--space-md);
+}
+
+.planet-info-stats {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.planet-info-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.planet-info-stat-value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ui-accent);
+}
+
+.planet-info-stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ui-text-muted);
+}
+
+.planet-info-close {
+  background: none;
+  border: 1px solid var(--ui-glass-border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.planet-info-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ui-text);
+}
+
+/* ===== LOADING SCREEN ===== */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--space-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  gap: var(--space-lg);
+}
+
+.loading-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--ui-text), var(--ui-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.loading-bar-track {
+  width: 240px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ui-accent), #e8c88a);
+  border-radius: 999px;
+  transition: width 0.3s var(--ease-out-expo);
+}
+
+.loading-text {
+  font-size: 0.8rem;
+  color: var(--ui-text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ===== TRANSITION OVERLAY ===== */
+.transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* ===== SPACE UI ===== */
+.space-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--ui-glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--ui-glass-border);
+  border-radius: 12px;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--ui-text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.02em;
+}
+
+.back-button:hover {
+  background: var(--ui-glass-bg-light);
+  border-color: var(--ui-accent);
+  box-shadow: 0 0 20px var(--ui-accent-glow);
+}
+
+.back-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.space-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ui-text-muted);
+  letter-spacing: 0.05em;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  display: none;
+}
