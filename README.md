@@ -6,6 +6,10 @@
 - 기술 스택 : React + 가능하면 R3F 까지 사용하기
 - 헥토르의 죽음 당하지 않기(AI에게 끌려 다니지 말라는 뜻)
 
+#### demo_devil
+😈 랜딩페이지 구현해봣서용. 캐릭터 wasd로 움직이고 스트릭 보여주고 깃발로 기술스택 표현하고 박스로 내 레포 몇갠지 표시하고 - 근데 구성은 바뀔 수 도 있삼~
+<img width="1023" height="595" alt="image" src="https://github.com/user-attachments/assets/94b8b044-2334-423e-b728-b0c78a75a26c" />
+
 #### Demo1
 - Claude Opus로 제작
 - 사용한 프롬프트는 다음과 같음
