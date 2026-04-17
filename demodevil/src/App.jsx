@@ -14,6 +14,7 @@ import Airboard from "./components/Airboard";
 import CameraFollow from "./components/CameraFollow";
 import TechFlag from "./components/TechFlag";
 import ProjectBox from "./components/ProjectBox";
+import StarObject from "./components/StarObject"; // ← 추가
 
 export default function App() {
   const [introFinished, setIntroFinished] = useState(false);
@@ -62,9 +63,9 @@ export default function App() {
         />
         <OrbitControls
           ref={orbitRef}
-          enableRotate={false} // 아이소메트릭 고정
+          enableRotate={false}
           enableZoom={true}
-          enablePan={false} // 패닝 끄기 (카메라가 대신 함)
+          enablePan={false}
         />
         <CameraFollow targetRef={characterRef} orbitRef={orbitRef} />
 
@@ -95,12 +96,14 @@ export default function App() {
           <group>
             <Airboard />
             <ContributionGrid dataMatrix={data} offsetX={2.5} />
-            // 캐릭터: 그리드 왼쪽 옆
+
+            {/* 캐릭터: 그리드 왼쪽 옆 */}
             <Character
               initialPosition={[-0.5, 0.15, 0]}
               positionRef={characterRef}
             />
-            // 깃발: 왼쪽 영역 (보드 안쪽으로)
+
+            {/* 깃발: 왼쪽 영역 (보드 안쪽으로) */}
             <TechFlag
               position={[-3.5, 0.15, -3]}
               label="React"
@@ -116,8 +119,12 @@ export default function App() {
               label="Node.js"
               color="#68a063"
             />
-            // 박스: 깃발 아래쪽
+
+            {/* 박스: 깃발 아래쪽 */}
             <ProjectBox position={[-3.0, 0.15, 3]} count={5} />
+
+            {/* 박스 위에 떠 있는 스타 오브젝트 */}
+            <StarObject position={[-3.0, 1.2, 3]} />
           </group>
 
           <DomeStars count={30000} radius={150} sizeMultiplier={4} />

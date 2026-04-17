@@ -19,6 +19,7 @@ export default function GrassBlade({ level, position }) {
     copy.traverse((obj) => {
       if (obj.isMesh) {
         obj.material = obj.material.clone();
+        obj.material.map = null;
         obj.material.color.set(GRASS_COLORS[level - 1] ?? GRASS_COLORS[0]);
         obj.castShadow = false;
         obj.receiveShadow = false;
