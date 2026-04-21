@@ -1,4 +1,5 @@
 import { Canvas, useFrame } from '@react-three/fiber'
+import { EffectComposer, Bloom } from '@react-three/postprocessing'
 import { Suspense, useRef, useState, useEffect } from 'react'
 import { CameraControls, Environment, Html, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
@@ -73,13 +74,13 @@ export default function App() {
 
   return (
     <div ref={containerRef} style={{ width: '100vw', height: '100vh', position: 'relative', backgroundColor: '#16171b', overflow: 'hidden' }}>
-      
+
       {/* 2D UI Layer */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto', position: 'absolute', top: '40px', left: '40px' }}>
           {/* Neumorphism UI works as a viewer now, appearing when a repo is selected */}
-          <NeumorphismCard 
-            repo={selectedRepo} 
+          <NeumorphismCard
+            repo={selectedRepo}
             onClose={() => {
               setSelectedRepo(null)
               setZoomTarget(null)
@@ -88,14 +89,21 @@ export default function App() {
         </div>
       </div>
 
-      <Canvas 
+      <Canvas
         eventSource={containerRef}
         style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}
         camera={{ position: [0, 5, 25], fov: 45 }}
+        dpr={Math.min(window.devicePixelRatio, 1.5)}
+        performance={{ min: 0.5 }}
       >
         <ambientLight intensity={0.4} />
         <spotLight position={[10, 20, 10]} intensity={1.5} angle={0.3} penumbra={1} castShadow />
         <pointLight position={[-10, -10, -10]} intensity={0.5} />
+        <directionalLight
+          position={[-50, 20, 50]}
+          intensity={3}
+          color="white"
+        />
 
         <Suspense fallback={<Loader />}>
           <SceneControls target={zoomTarget} />
@@ -103,7 +111,7 @@ export default function App() {
           <BackgroundStars count={starCount} />
 
           {repos.slice(0, 1).map((repo, idx) => (
-            <RepoPlanet 
+            <RepoPlanet
               key={repo.id}
               repo={repo}
               position={[0, 0, 0]}
@@ -114,7 +122,14 @@ export default function App() {
             />
           ))}
 
-          <Environment preset="city" />
+          <Environment files="/models/monochrome_studio_02_4k.hdr" background={false} />
+          <EffectComposer disableNormalPass multisampling={0}>
+            <Bloom
+              luminanceThreshold={1.5}
+              mipmapBlur
+              intensity={1.0}
+            />
+          </EffectComposer>
         </Suspense>
       </Canvas>
     </div>

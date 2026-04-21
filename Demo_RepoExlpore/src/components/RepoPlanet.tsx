@@ -14,7 +14,7 @@ interface RepoPlanetProps {
 function PlanetAsteroidBelt({ count, radius }: { count: number; radius: number }) {
   const meshRef = useRef<THREE.InstancedMesh>(null)
   const { scene } = useGLTF('/models/asteroids_pack_rocky_version.glb')
-  
+
   const { geometry, material } = useMemo(() => {
     let geo = null
     let mat = null
@@ -29,6 +29,8 @@ function PlanetAsteroidBelt({ count, radius }: { count: number; radius: number }
 
   useEffect(() => {
     if (!meshRef.current || !geometry) return
+    // Removed layer setting so it renders normally on layer 0
+
     const dummy = new THREE.Object3D()
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5
@@ -56,6 +58,8 @@ function Comet({ radius, speed, offsetAngle }: { radius: number; speed: number; 
   const cometRef = useRef<THREE.Group>(null)
   const clonedScene = useMemo(() => scene.clone(), [scene])
 
+  // Removed confusing layer traversals completely
+
   useFrame((state) => {
     if (!cometRef.current) return
     const time = state.clock.getElapsedTime()
@@ -74,19 +78,37 @@ function Comet({ radius, speed, offsetAngle }: { radius: number; speed: number; 
 
 export function RepoPlanet({ repo, position, onClick }: RepoPlanetProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const { scene: planetScene } = useGLTF('/models/purple_planet.glb')
   
-  // 1. Planet Scale (Stars + Forks)
+  const { scene: planetScene } = useGLTF('/models/purple_planet.glb')
+  const clonedPlanetScene = useMemo(() => planetScene.clone(), [planetScene]);
+
+  // Set emissive settings for HDR Bloom, removed Layer 1 logic
+  useEffect(() => {
+    if (clonedPlanetScene) {
+      clonedPlanetScene.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) {
+          if (obj.material) {
+             const mat = obj.material.clone()
+             if (mat.emissive) {
+                if (mat.emissive.getHex() === 0) {
+                   mat.emissive.copy(mat.color || new THREE.Color(0xffffff))
+                }
+                mat.emissiveIntensity = 2.0 // Boost for HDR threshold
+             }
+             obj.material = mat
+          }
+        }
+      });
+    }
+  }, [clonedPlanetScene]);
+
   const totalPopularity = repo.stargazers_count + repo.forks_count
-  const baseScale = 0.5 // purple_planet.glb is likely large
+  const baseScale = 0.5 
   const planetScale = baseScale + (totalPopularity / 500000)
 
-  // 2. Asteroid Count (Commits) - SIGNIFICANTLY REDUCED
-  // Map commits to number of asteroids, max 40
   const asteroidCount = Math.min(Math.max(Math.ceil(repo.commits_count / 1000), 10), 40)
   const beltRadius = 6
 
-  // 3. Comets (Open issues)
   const cometCount = Math.min(Math.max(Math.ceil(repo.open_issues_count / 1000), 1), 3)
   const comets = useMemo(() => Array.from({ length: cometCount }).map((_, i) => ({
     radius: beltRadius + 3 + Math.random() * 2,
@@ -101,7 +123,7 @@ export function RepoPlanet({ repo, position, onClick }: RepoPlanetProps) {
   })
 
   return (
-    <group 
+    <group
       position={position}
       onClick={(e) => {
         e.stopPropagation()
@@ -120,21 +142,20 @@ export function RepoPlanet({ repo, position, onClick }: RepoPlanetProps) {
       }}
     >
       <group ref={groupRef}>
-        {/* Using the original purple planet model instead of Sphere */}
-        <primitive object={planetScene} scale={[planetScale, planetScale, planetScale]} />
-        
+        <primitive object={clonedPlanetScene} scale={[planetScale, planetScale, planetScale]} />
+
         <PlanetAsteroidBelt count={asteroidCount} radius={beltRadius} />
 
         {comets.map((c, i) => (
           <Comet key={i} radius={c.radius} speed={c.speed} offsetAngle={c.offset} />
         ))}
       </group>
-      
-      <Text 
-        position={[0, 4, 0]} 
-        fontSize={0.6} 
-        color="white" 
-        anchorX="center" 
+
+      <Text
+        position={[0, 4, 0]}
+        fontSize={0.6}
+        color="white"
+        anchorX="center"
         anchorY="middle"
         outlineWidth={0.05}
         outlineColor="#000"
