@@ -4,20 +4,24 @@ import { useGLTF, useAnimations } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface InteractiveBookProps {
-  position: [number, number, number]
-  rotation?: [number, number, number]
   onBookClick?: (position: THREE.Vector3, isOpen: boolean) => void
 }
 
-export function InteractiveBook({ position, rotation, onBookClick }: InteractiveBookProps) {
+export function InteractiveBook({ onBookClick }: InteractiveBookProps) {
   const { scene, animations } = useGLTF('/models/book_animated_book__historical_book.glb')
   const groupRef = useRef<THREE.Group>(null)
   const { actions, names } = useAnimations(animations, groupRef)
 
   const [isOpen, setIsOpen] = useState(false)
+  const animProgress = useRef(0)
+
+  // Local static quaternions to avoid recreating them on every frame
+  // closed: tilted to show cover nicely from front
+  const closedQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(1.2, 0.4, 0))
+  // opened: facing camera directly to read pages
+  const openedQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(1.5, -0.2, 0))
 
   useEffect(() => {
-    console.log("Book animations available: ", names)
     if (names.length > 0 && actions[names[0]]) {
       const action = actions[names[0]]
       action!.clampWhenFinished = true
@@ -25,38 +29,54 @@ export function InteractiveBook({ position, rotation, onBookClick }: Interactive
 
       if (isOpen) {
         action!.paused = false
-        action!.timeScale = 3
+        action!.timeScale = 2.5
         action!.play()
       } else {
         // play backwards to close
         action!.paused = false
-        action!.timeScale = -3
+        action!.timeScale = -2.5
         action!.time = action!.getClip().duration
         action!.play()
       }
     }
   }, [isOpen, actions, names])
 
-  // basic rotation towards camera if no anims
-  const baseRotX = rotation?.[0] || 0
-  const baseRotY = rotation?.[1] || 0
-  const baseRotZ = rotation?.[2] || 0
+  useFrame((state, delta) => {
+    if (!groupRef.current) return
 
-  const targetRotX = isOpen && names.length === 0 ? baseRotX + Math.PI / 4 : baseRotX
-  const targetRotY = isOpen && names.length === 0 ? baseRotY + Math.PI / 8 : baseRotY
+    animProgress.current = THREE.MathUtils.lerp(
+      animProgress.current,
+      isOpen ? 1 : 0,
+      delta * 5
+    )
+    const p = animProgress.current
 
-  useFrame((_, delta) => {
-    if (groupRef.current && names.length === 0) {
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, delta * 4)
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, delta * 4)
-    }
+    // Calculate dimensions relative to the camera
+    const cam = state.camera as THREE.PerspectiveCamera
+    const distance = 4
+    const height = 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * distance
+    const width = height * cam.aspect
+
+    // Position relative to camera frame
+    // Tweak to sit "absolutely" on the Neumorphism UI card on the top left
+    const closedLocalPos = new THREE.Vector3(-width / 2 + 1.4, height / 2 - 1.2, -distance)
+    
+    // When opened, book comes fully to the center, much closer to the camera
+    const openedLocalPos = new THREE.Vector3(0, -0.2, -2.5)
+
+    const currentLocalPos = new THREE.Vector3().lerpVectors(closedLocalPos, openedLocalPos, p)
+    const currentLocalQuat = new THREE.Quaternion().slerpQuaternions(closedQuat, openedQuat, p)
+
+    // Apply transform tied exactly to camera's current matrix
+    currentLocalPos.applyMatrix4(cam.matrixWorld)
+    groupRef.current.position.copy(currentLocalPos)
+    
+    groupRef.current.quaternion.copy(cam.quaternion).multiply(currentLocalQuat)
   })
 
   return (
     <group
-      position={position}
       ref={groupRef}
-      rotation={[baseRotX, baseRotY, baseRotZ]}
       onClick={(e) => {
         e.stopPropagation()
         const nextState = !isOpen

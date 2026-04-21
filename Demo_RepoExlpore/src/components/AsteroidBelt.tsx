@@ -84,6 +84,7 @@ export function AsteroidBelt({ count, radius, onAsteroidClick }: AsteroidBeltPro
       <instancedMesh
         ref={meshRef}
         args={[geometry, material, count]}
+        frustumCulled={false}
         onClick={handleClick}
         onPointerOver={(e) => {
           e.stopPropagation()
