@@ -66,6 +66,7 @@ export function BackgroundStars({ count }: BackgroundStarsProps) {
         transparent 
         opacity={0.9} 
         sizeAttenuation={true} 
+        fog={false}
       />
     </points>
   )

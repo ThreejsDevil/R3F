@@ -28,17 +28,19 @@ const MOCK_REPOS: RepoData[] = [
   },
 ];
 
-const fetchMockData = async (): Promise<RepoData[]> => {
+const fetchMockData = async (query: string): Promise<RepoData[]> => {
   // Simulate network delay
   await new Promise((resolve) => setTimeout(resolve, 800));
+  // In a real scenario, this would filter or fetch based on `query`
   return MOCK_REPOS;
 };
 
-export function useGithubData() {
-  const { data = [], isLoading } = useQuery({
-    queryKey: ['github-repos'],
-    queryFn: fetchMockData,
+export function useGithubData(searchQuery: string) {
+  const { data = [], isLoading, isFetching } = useQuery({
+    queryKey: ['github-repos', searchQuery],
+    queryFn: () => fetchMockData(searchQuery),
+    enabled: !!searchQuery,
   });
 
-  return { data, loading: isLoading };
+  return { data, loading: isLoading || isFetching };
 }

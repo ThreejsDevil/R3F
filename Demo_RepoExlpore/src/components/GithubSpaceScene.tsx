@@ -27,11 +27,11 @@ function SceneControls({ target }: { target: THREE.Vector3 | null }) {
     if (target && controlsRef.current) {
       // Zoom into the selected planet tightly. We approach from slightly right/top
       controlsRef.current.setTarget(target.x, target.y, target.z, true)
-      controlsRef.current.setPosition(target.x + 3, target.y + 1, target.z + 8, true)
+      controlsRef.current.setPosition(target.x + 3, target.y + 3, target.z + 8, true)
     } else if (controlsRef.current) {
       // Reset to solar system view
       controlsRef.current.setTarget(0, 0, 0, true)
-      controlsRef.current.setPosition(0, 5, 25, true)
+      controlsRef.current.setPosition(0, 3, 20, true)
     }
   }, [target])
 
@@ -55,9 +55,22 @@ function SceneControls({ target }: { target: THREE.Vector3 | null }) {
 
 export interface GithubSpaceSceneProps {
   repos: RepoData[];
+  isSearchMode?: boolean;
 }
 
-export function GithubSpaceScene({ repos }: GithubSpaceSceneProps) {
+function SceneFog({ isSearchMode }: { isSearchMode: boolean }) {
+  useFrame((state, delta) => {
+    const targetFar = isSearchMode ? 0.1 : 200;
+    // Animate fog.far smoothly
+    if (state.scene.fog) {
+      state.scene.fog.far = THREE.MathUtils.lerp(state.scene.fog.far, targetFar, delta * 1.5);
+    }
+  });
+
+  return <fog attach="fog" args={['#0b0e14', 0, 0.1]} />; // Deep space dark matching background
+}
+
+export function GithubSpaceScene({ repos, isSearchMode = false }: GithubSpaceSceneProps) {
   const [zoomTarget, setZoomTarget] = useState<THREE.Vector3 | null>(null)
   const [selectedRepo, setSelectedRepo] = useState<RepoData | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -107,6 +120,7 @@ export function GithubSpaceScene({ repos }: GithubSpaceSceneProps) {
         />
 
         <Suspense fallback={<Loader />}>
+          <SceneFog isSearchMode={isSearchMode} />
           <SceneControls target={zoomTarget} />
 
           <BackgroundStars count={starCount} />
@@ -128,7 +142,7 @@ export function GithubSpaceScene({ repos }: GithubSpaceSceneProps) {
             <Bloom
               luminanceThreshold={1.5}
               mipmapBlur
-              intensity={1.0}
+              intensity={3.0}
             />
           </EffectComposer>
         </Suspense>
