@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Search, TrendingUp, Star, History } from 'lucide-react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -28,17 +29,12 @@ export function SearchBar({ onSearch, isSearching }: SearchBarProps) {
         </div>
 
         {/* Neumorphic Search Container */}
-        <div className="neumorph-extruded w-full p-6 rounded-[2rem] transition-all duration-500 ease-in-out group">
+        <div className="neumorph-extruded w-full p-6 rounded-4xl transition-all duration-500 ease-in-out group">
           <form
-            className="neumorph-sunken flex items-center px-6 py-5 rounded-[1.5rem] transition-all duration-300"
+            className="neumorph-sunken flex items-center gap-x-4 px-6 py-5 h-12 rounded-3xl transition-all duration-300"
             onSubmit={handleSubmit}
           >
-            <span
-              className="material-symbols-outlined text-[#8a2be2] mr-4 text-[28px]"
-              style={{ fontVariationSettings: "'FILL' 0" }}
-            >
-              search
-            </span>
+            <Search className="text-[#8a2be2] shrink-0 px-2 w-7 h-7" />
             <input
               className="bg-transparent border-none outline-none w-full text-[#e1e2eb] font-['Inter'] text-[16px] placeholder:text-[#4c4354] focus:ring-0"
               placeholder="Search repositories..."
@@ -54,15 +50,15 @@ export function SearchBar({ onSearch, isSearching }: SearchBarProps) {
         {/* Subtle Quick Actions/Tags */}
         <div className="flex flex-wrap justify-center gap-4 opacity-40 hover:opacity-100 transition-opacity duration-500">
           <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-full neumorph-extruded font-['Inter'] text-[12px] font-medium text-[#cfc2d7] hover:text-[#00cdd0] transition-colors">
-            <span className="material-symbols-outlined text-[16px]">trending_up</span>
+            <TrendingUp className="w-4 h-4" />
             Trending
           </button>
           <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-full neumorph-extruded font-['Inter'] text-[12px] font-medium text-[#cfc2d7] hover:text-[#00cdd0] transition-colors">
-            <span className="material-symbols-outlined text-[16px]">star</span>
+            <Star className="w-4 h-4" />
             Popular
           </button>
           <button type="button" className="flex items-center gap-2 px-4 py-2 rounded-full neumorph-extruded font-['Inter'] text-[12px] font-medium text-[#cfc2d7] hover:text-[#00cdd0] transition-colors">
-            <span className="material-symbols-outlined text-[16px]">history</span>
+            <History className="w-4 h-4" />
             Recent
           </button>
         </div>

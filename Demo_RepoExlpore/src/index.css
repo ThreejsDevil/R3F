@@ -1,99 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@theme {
+  --font-pretendard: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
+  
+  --color-surface-hi: var(--surface-hi);
+  --color-surface-lo: var(--surface-lo);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-glow: var(--accent-glow);
+  --color-accent-soft: var(--accent-soft);
+}
+
+:root {
+  --surface-hi: #232647;
+  --surface-lo: #12132a;
+  --text: #e6e8ff;
+  --text-dim: #9499c7;
+  --text-muted: #6e73a0;
+  --accent: oklch(0.78 0.14 220);
+  --accent-glow: oklch(0.78 0.14 220 / 0.4);
+  --accent-soft: oklch(0.78 0.14 220 / 0.12);
+  --shadow-dark: rgba(0, 0, 0, 0.55);
+  --shadow-light: rgba(120, 140, 200, 0.08);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #0b0e14;
-  font-family: 'Inter', 'Outfit', sans-serif;
-  color: #fff;
+  background-color: #0a0b14; /* Deep space background */
+  font-family: var(--font-pretendard);
+  color: var(--text);
 }
 
-/* Neumorphic Extruded Surface */
-.neumorph-extruded {
-  background: #10131a;
-  box-shadow: 
-    -8px -8px 20px rgba(255, 255, 255, 0.03),
-    8px 8px 20px rgba(0, 0, 0, 0.6);
-}
-
-/* Neumorphic Sunken Surface (Search Input) */
-.neumorph-sunken {
-  background: #0b0e14;
-  box-shadow: 
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02),
-    inset 4px 4px 8px rgba(0, 0, 0, 0.8);
-}
-
-/* Focus State for Search Input */
-.neumorph-sunken:focus-within {
-  box-shadow: 
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02),
-    inset 4px 4px 12px rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(138, 45, 226, 0.3);
-}
-
-/* Particle Background Aesthetic */
-.cosmic-void {
+/* ============ NEBULA ============ */
+.nebula-glow {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(138, 45, 226, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 20% 30%, rgba(0, 205, 208, 0.03) 0%, transparent 30%);
-  z-index: -1;
-}
-
-/* Base utility for any overlays */
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  border-radius: 50%;
+  filter: blur(90px);
   pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  transition: opacity 1.5s cubic-bezier(0.5, 0, 0.3, 1), transform 1.5s cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+/* When clearing out, we make them expand and fade out */
+.nebula-glow.clearing {
+  opacity: 0;
+  transform: scale(2) translate(0, 0) !important;
+}
+
+.nebula-1 {
+  width: 520px;
+  height: 520px;
+  left: -8%;
+  top: 15%;
+  background: oklch(0.55 0.2 300 / 0.35);
+  animation: drift1 40s ease-in-out infinite;
+}
+
+.nebula-2 {
+  width: 620px;
+  height: 620px;
+  right: -12%;
+  bottom: 8%;
+  background: oklch(0.55 0.2 220 / 0.3);
+  animation: drift2 50s ease-in-out infinite;
+}
+
+.nebula-3 {
+  width: 400px;
+  height: 400px;
+  left: 40%;
+  top: 60%;
+  background: oklch(0.5 0.18 260 / 0.25);
+  animation: drift1 60s ease-in-out infinite reverse;
+}
+
+@keyframes drift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(80px, -40px) scale(1.1); }
+}
+
+@keyframes drift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-60px, -50px) scale(1.15); }
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes orbit-ring {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orb-grow {
+  0% { width: 8px; height: 8px; }
+  100% { width: 140px; height: 140px; }
+}
+
+@keyframes halo-pulse {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes progress {
+  to { width: 100%; }
+}
+
+@keyframes card-float {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -8px; }
+}
+
+@keyframes blink-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ============ CIRCLE WIPE ============ */
+.circle-wipe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(10, 11, 20, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.circle-wipe.in {
+  transform: translate(-50%, -50%) scale(400);
+  opacity: 1;
+  transition: transform 0.7s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.4s 0.3s;
+}
+
+.circle-wipe.out {
+  transform: translate(-50%, -50%) scale(400);
+  opacity: 0;
+  transition: opacity 0.8s; /* slower fade out to reveal scene nicely */
+}
+
+/* Common UI Layering */
+.ui-scene {
+  position: absolute;
+  inset: 0;
   z-index: 10;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 2rem;
-}
-
-/* Glassmorphism panel for D3 Chart or info */
-.glass-panel {
-  background: rgba(20, 20, 25, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-  padding: 1.5rem;
-  color: white;
-  pointer-events: auto;
-}
-
-/* Loading fallback */
-.loader-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  background: #050508;
-  color: white;
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: 2px;
+}
+
+/* Utilities for shadows to use in tailwind */
+.shadow-neumorph-mark {
+  box-shadow: 6px 6px 14px var(--shadow-dark), -4px -4px 10px var(--shadow-light), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.shadow-neumorph-box {
+  box-shadow: 10px 10px 28px var(--shadow-dark), -6px -6px 18px var(--shadow-light), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.shadow-neumorph-btn {
+  box-shadow: 4px 4px 10px var(--shadow-dark), -3px -3px 8px var(--shadow-light), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.shadow-neumorph-btn-hover {
+  box-shadow: 4px 4px 10px var(--shadow-dark), -3px -3px 8px var(--shadow-light), inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 18px var(--accent-glow);
+}
+.shadow-neumorph-btn-active {
+  box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+}
+.shadow-neumorph-chip {
+  box-shadow: 3px 3px 8px var(--shadow-dark), -2px -2px 6px var(--shadow-light), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.shadow-neumorph-chip-active {
+  box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+}
+.shadow-neumorph-focus {
+  box-shadow: inset 4px 4px 10px var(--shadow-dark), inset -3px -3px 8px var(--shadow-light), 0 0 0 1px var(--accent-soft), 0 0 30px var(--accent-glow);
+}
+.shadow-neumorph-loading {
+  box-shadow: 8px 8px 24px var(--shadow-dark), -6px -6px 18px var(--shadow-light), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Helper Gradient Text */
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent), oklch(0.85 0.1 280));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

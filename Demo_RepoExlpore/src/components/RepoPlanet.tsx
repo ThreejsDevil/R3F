@@ -8,7 +8,21 @@ import { SaturnRing } from './SaturnRingProps'
 interface RepoPlanetProps {
   repo: RepoData;
   position: [number, number, number];
+  isSceneVisible?: boolean;
   onClick?: (pos: THREE.Vector3, repo: RepoData) => void;
+}
+
+function RingSystem({ isVisible, children }: { isVisible: boolean, children: React.ReactNode }) {
+  const groupRef = useRef<THREE.Group>(null)
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      const targetScale = isVisible ? 1 : 0.001
+      groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), delta * 5)
+    }
+  })
+
+  return <group ref={groupRef} scale={0.001}>{children}</group>
 }
 
 // Sub-component for individual Planet's Asteroid Belt
@@ -110,7 +124,7 @@ function IssueAsteroids({ count, radius }: { count: number; radius: number }) {
   )
 }
 
-export function RepoPlanet({ repo, position, onClick }: RepoPlanetProps) {
+export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: RepoPlanetProps) {
   const groupRef = useRef<THREE.Group>(null)
 
   const { scene: planetScene } = useGLTF('/models/purple_planet.glb')
@@ -173,15 +187,17 @@ export function RepoPlanet({ repo, position, onClick }: RepoPlanetProps) {
     >
       <group ref={groupRef}>
         <primitive object={clonedPlanetScene} scale={[planetScale, planetScale, planetScale]} />
-        <PlanetAsteroidBelt count={asteroidCount} radius={beltRadius} />
-        <SaturnRing planetScale={planetScale} commitsCount={repo.commits_count} />
+        <RingSystem isVisible={isSceneVisible}>
+          <PlanetAsteroidBelt count={asteroidCount} radius={beltRadius} />
+          <SaturnRing planetScale={planetScale} commitsCount={repo.commits_count} />
 
-        {issueAsteroidCount > 0 && (
-          <IssueAsteroids count={issueAsteroidCount} radius={issueRadius} />
-        )}
+          {issueAsteroidCount > 0 && (
+            <IssueAsteroids count={issueAsteroidCount} radius={issueRadius} />
+          )}
+        </RingSystem>
       </group>
 
-      <Billboard position={[0, planetScale * 2, 0]}>
+      {/* <Billboard position={[0, planetScale * 2, 0]}>
         <Text
           font="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/packages/pretendard/dist/web/static/woff/Pretendard-Regular.woff"
           fontSize={0.6}
@@ -193,7 +209,7 @@ export function RepoPlanet({ repo, position, onClick }: RepoPlanetProps) {
         >
           {repo.name}
         </Text>
-      </Billboard>
+      </Billboard> */}
     </group>
   )
 }

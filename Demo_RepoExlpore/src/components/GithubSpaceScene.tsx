@@ -5,7 +5,6 @@ import { CameraControls, Environment, Html, useProgress } from '@react-three/dre
 import * as THREE from 'three'
 
 import { BackgroundStars } from './BackgroundStars'
-import { NeumorphismCard } from './NeumorphismCard'
 import { RepoPlanet } from './RepoPlanet'
 import type { RepoData } from '../hooks/useGithubData'
 
@@ -14,7 +13,7 @@ function Loader() {
   return (
     <Html center>
       <div className="loader-container" style={{ background: 'transparent', color: 'white' }}>
-        LOADING... {progress.toFixed(0)}%
+
       </div>
     </Html>
   )
@@ -56,23 +55,23 @@ function SceneControls({ target }: { target: THREE.Vector3 | null }) {
 export interface GithubSpaceSceneProps {
   repos: RepoData[];
   isSearchMode?: boolean;
+  isSceneVisible?: boolean;
 }
 
 function SceneFog({ isSearchMode }: { isSearchMode: boolean }) {
   useFrame((state, delta) => {
-    const targetFar = isSearchMode ? 0.1 : 200;
-    // Animate fog.far smoothly
-    if (state.scene.fog) {
-      state.scene.fog.far = THREE.MathUtils.lerp(state.scene.fog.far, targetFar, delta * 1.5);
+    const fog = state.scene.fog as THREE.Fog
+    if (fog) {
+      const targetFar = isSearchMode ? 0.1 : 200
+      fog.far = THREE.MathUtils.lerp(fog.far, targetFar, delta * 1.5)
     }
   });
 
   return <fog attach="fog" args={['#0b0e14', 0, 0.1]} />; // Deep space dark matching background
 }
 
-export function GithubSpaceScene({ repos, isSearchMode = false }: GithubSpaceSceneProps) {
+export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible = false }: GithubSpaceSceneProps) {
   const [zoomTarget, setZoomTarget] = useState<THREE.Vector3 | null>(null)
-  const [selectedRepo, setSelectedRepo] = useState<RepoData | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Calculate Stars based on Contributors
@@ -91,16 +90,6 @@ export function GithubSpaceScene({ repos, isSearchMode = false }: GithubSpaceSce
 
       {/* 2D UI Layer */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}>
-        <div style={{ pointerEvents: 'auto', position: 'absolute', top: '40px', left: '40px' }}>
-          {/* Neumorphism UI works as a viewer now, appearing when a repo is selected */}
-          <NeumorphismCard
-            repo={selectedRepo}
-            onClose={() => {
-              setSelectedRepo(null)
-              setZoomTarget(null)
-            }}
-          />
-        </div>
       </div>
 
       <Canvas
@@ -130,9 +119,9 @@ export function GithubSpaceScene({ repos, isSearchMode = false }: GithubSpaceSce
               key={repo.id}
               repo={repo}
               position={getRepoPosition(idx, repos.length)}
-              onClick={(pos, clickedRepo) => {
-                setZoomTarget(pos)
-                setSelectedRepo(clickedRepo)
+              isSceneVisible={isSceneVisible}
+              onClick={(pos) => {
+                setZoomTarget(prev => prev && prev.distanceTo(pos) < 0.1 ? null : pos)
               }}
             />
           ))}

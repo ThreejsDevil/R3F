@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Githuble · 레포 탐험</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<style>
+  :root {
+    --surface-hi: #232647;
+    --surface-lo: #12132a;
+    --text: #e6e8ff;
+    --text-dim: #9499c7;
+    --text-muted: #6e73a0;
+    --accent: oklch(0.78 0.14 220);
+    --accent-glow: oklch(0.78 0.14 220 / 0.4);
+    --accent-soft: oklch(0.78 0.14 220 / 0.12);
+    --shadow-dark: rgba(0, 0, 0, 0.55);
+    --shadow-light: rgba(120, 140, 200, 0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+    color: var(--text);
+    background: transparent;
+  }
+  body { position: relative; }
+
+  /* ============ NEBULA ONLY (투명 위에 성운만) ============ */
+  .nebula-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: screen;
+    opacity: 0.55;
+  }
+  .nebula-1 {
+    width: 520px; height: 520px;
+    left: -8%; top: 15%;
+    background: oklch(0.55 0.2 300 / 0.35);
+    animation: drift1 40s ease-in-out infinite;
+  }
+  .nebula-2 {
+    width: 620px; height: 620px;
+    right: -12%; bottom: 8%;
+    background: oklch(0.55 0.2 220 / 0.3);
+    animation: drift2 50s ease-in-out infinite;
+  }
+  .nebula-3 {
+    width: 400px; height: 400px;
+    left: 40%; top: 60%;
+    background: oklch(0.5 0.18 260 / 0.25);
+    animation: drift1 60s ease-in-out infinite reverse;
+  }
+  @keyframes drift1 {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(80px, -40px) scale(1.1); }
+  }
+  @keyframes drift2 {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(-60px, -50px) scale(1.15); }
+  }
+
+  /* ============ SCENE ============ */
+  .scene {
+    position: fixed; inset: 0;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ============ 검색 씬 ============ */
+  #searchScene {
+    transition: opacity 0.35s;
+  }
+  #searchScene.hiding {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .search-stage {
+    width: min(620px, 90vw);
+    display: flex; flex-direction: column; align-items: center;
+    gap: 30px;
+    padding: 40px 0;
+  }
+
+  .brand {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .brand-mark {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--surface-hi), var(--surface-lo));
+    box-shadow:
+      6px 6px 14px var(--shadow-dark),
+      -4px -4px 10px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .brand-mark::before {
+    content: '';
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 14px var(--accent-glow), inset -2px -2px 3px rgba(0,0,0,0.3);
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid oklch(0.78 0.14 220 / 0.3);
+    animation: orbit-ring 10s linear infinite;
+  }
+  @keyframes orbit-ring { to { transform: rotate(360deg); } }
+  .brand-name {
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    font-weight: 500;
+    color: var(--text-dim);
+    padding-left: 0.35em;
+  }
+
+  .headline { text-align: center; }
+  .headline .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 14px;
+    opacity: 0.85;
+  }
+  .headline h1 {
+    font-size: 40px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .headline h1 em {
+    font-style: normal;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), oklch(0.85 0.1 280));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .headline p {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 0.01em;
+  }
+
+  /* ---- 뉴모피즘 검색창 (투명+성운 통과) ---- */
+  .search-box {
+    width: 100%;
+    background: linear-gradient(145deg, rgba(35, 38, 71, 0.25), rgba(18, 19, 42, 0.25));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 26px;
+    padding: 8px;
+    box-shadow:
+      10px 10px 28px var(--shadow-dark),
+      -6px -6px 18px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+    display: flex; align-items: center;
+    gap: 4px;
+    transition: box-shadow 0.3s;
+  }
+  .search-box:focus-within {
+    box-shadow:
+      inset 4px 4px 10px var(--shadow-dark),
+      inset -3px -3px 8px var(--shadow-light),
+      0 0 0 1px var(--accent-soft),
+      0 0 30px var(--accent-glow);
+  }
+  .search-icon {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none; outline: none;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--text);
+    padding: 14px 4px;
+    letter-spacing: 0.01em;
+  }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-btn {
+    width: 54px; height: 54px;
+    border-radius: 18px;
+    border: none;
+    background: linear-gradient(145deg, rgba(35, 38, 71, 0.8), rgba(18, 19, 42, 0.8));
+    box-shadow:
+      4px 4px 10px var(--shadow-dark),
+      -3px -3px 8px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+    color: var(--accent);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .search-btn:hover {
+    color: white;
+    box-shadow:
+      4px 4px 10px var(--shadow-dark),
+      -3px -3px 8px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.06),
+      0 0 18px var(--accent-glow);
+  }
+  .search-btn:active {
+    box-shadow:
+      inset 3px 3px 6px var(--shadow-dark),
+      inset -2px -2px 5px var(--shadow-light);
+  }
+
+  /* ---- 추천 칩 ---- */
+  .suggestions {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center;
+    max-width: 560px;
+  }
+  .chip {
+    background: linear-gradient(145deg, rgba(35, 38, 71, 0.2), rgba(18, 19, 42, 0.2));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 100px;
+    padding: 9px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    box-shadow:
+      3px 3px 8px var(--shadow-dark),
+      -2px -2px 6px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.05);
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .chip:hover {
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+  .chip:active {
+    box-shadow:
+      inset 2px 2px 5px var(--shadow-dark),
+      inset -2px -2px 4px var(--shadow-light);
+  }
+  .chip .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent-glow);
+  }
+
+  /* ============ 로딩 씬 (심플 원형 통과) ============ */
+  #loadingScene {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #loadingScene.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .scope-simple {
+    position: relative;
+    width: 280px; height: 280px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* 바깥 링 — 뉴모피즘 */
+  .scope-simple .outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow:
+      8px 8px 24px var(--shadow-dark),
+      -6px -6px 18px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+    background: linear-gradient(145deg, rgba(35,38,71,0.35), rgba(18,19,42,0.35));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  /* 회전 링 */
+  .scope-simple .ring {
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    border: 1px dashed oklch(0.78 0.14 220 / 0.4);
+    animation: ring-spin 8s linear infinite;
+  }
+  .scope-simple .ring::before {
+    content: '';
+    position: absolute;
+    top: -4px; left: 50%;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    transform: translateX(-50%);
+  }
+  @keyframes ring-spin { to { transform: rotate(360deg); } }
+  /* 중심 점 — 작은 행성이 커지는 느낌 */
+  .scope-simple .orb {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, oklch(0.85 0.12 220), oklch(0.55 0.16 240));
+    box-shadow: 0 0 18px var(--accent-glow);
+    animation: orb-grow 2.4s ease-in-out forwards;
+  }
+  @keyframes orb-grow {
+    0%   { width: 8px; height: 8px; }
+    100% { width: 80px; height: 80px; }
+  }
+  /* 주변 얇은 링 */
+  .scope-simple .halo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid oklch(0.78 0.14 220 / 0.15);
+    animation: halo-pulse 2.4s ease-out infinite;
+  }
+  @keyframes halo-pulse {
+    0%   { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1.2); opacity: 0; }
+  }
+
+  .loading-label {
+    position: absolute;
+    top: calc(100% + 40px); left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 320px;
+  }
+  .loading-label .step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 10px;
+    opacity: 0.85;
+  }
+  .loading-label .name {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--text);
+  }
+  .loading-label .progress-track {
+    margin: 16px auto 0;
+    width: 200px; height: 2px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .loading-label .progress-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    animation: progress 2.4s ease-in forwards;
+  }
+  @keyframes progress { to { width: 100%; } }
+
+  /* 심플한 원형 전환: 검색씬 위에 동그라미가 확장되며 지나가는 느낌 */
+  .circle-wipe {
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(10, 11, 20, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 50;
+    pointer-events: none;
+    transition: transform 0.7s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.4s 0.3s;
+    opacity: 0;
+  }
+  .circle-wipe.in {
+    transform: translate(-50%, -50%) scale(400);
+    opacity: 1;
+  }
+  .circle-wipe.out {
+    transform: translate(-50%, -50%) scale(400);
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  /* ============ 행성 씬 ============ */
+  #planetScene {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  #planetScene.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .planet-layout {
+    position: relative;
+    width: 100%; height: 100%;
+  }
+
+  .planet-stage {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    perspective: 1200px;
+  }
+  .planet {
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    position: relative;
+    background:
+      radial-gradient(circle at 70% 70%, oklch(0.15 0.08 260) 0%, transparent 60%),
+      radial-gradient(circle at 30% 25%, oklch(0.85 0.1 220) 0%, oklch(0.62 0.16 220) 30%, oklch(0.32 0.12 260) 70%, oklch(0.18 0.08 280) 100%);
+    box-shadow:
+      inset -40px -30px 80px rgba(0,0,0,0.7),
+      inset 20px 15px 40px oklch(0.85 0.1 220 / 0.2),
+      0 0 80px oklch(0.62 0.16 220 / 0.35);
+    animation: planet-rotate 80s linear infinite;
+  }
+  @keyframes planet-rotate { to { transform: rotate(360deg); } }
+  .planet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(ellipse 30% 10% at 60% 40%, oklch(0.7 0.14 220 / 0.4), transparent 70%),
+      radial-gradient(ellipse 20% 8% at 30% 60%, oklch(0.7 0.14 220 / 0.3), transparent 70%),
+      radial-gradient(ellipse 15% 6% at 70% 75%, oklch(0.85 0.1 220 / 0.35), transparent 70%);
+    opacity: 0.8;
+  }
+  .planet::after {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 48%, oklch(0.78 0.14 220 / 0.2) 50%, transparent 55%);
+  }
+  /* ===== 커밋 고리 (여러 겹) ===== */
+  .orbit-layer {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .commit-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) rotateX(72deg);
+    pointer-events: auto;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .commit-ring:hover { border-color: var(--accent) !important; }
+  .commit-ring.r1 { width: 560px; height: 560px; border: 2px solid oklch(0.78 0.14 220 / 0.35); }
+  .commit-ring.r2 { width: 620px; height: 620px; border: 1px solid oklch(0.78 0.14 220 / 0.18); }
+  .commit-ring.r3 { width: 680px; height: 680px; border: 1px dashed oklch(0.78 0.14 220 / 0.12); }
+
+  /* 위성 */
+  .moon-orb-sat {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform-origin: 0 0;
+    animation: orbit-rot var(--dur, 22s) linear infinite;
+    pointer-events: none;
+  }
+  .moon-orb-sat .dot {
+    position: absolute;
+    left: var(--r, 260px); top: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #c6e6f7, #5d8fb5);
+    box-shadow: inset -3px -3px 6px rgba(0,0,0,0.5), 0 0 10px var(--accent-glow);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s;
+  }
+  .moon-orb-sat .dot:hover { transform: scale(1.25); }
+  @keyframes orbit-rot { to { transform: rotate(360deg); } }
+
+  /* 이슈 운석 (불규칙 모양) */
+  .asteroid {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform-origin: 0 0;
+    animation: orbit-rot var(--dur, 30s) linear infinite;
+    pointer-events: none;
+  }
+  .asteroid .rock {
+    position: absolute;
+    left: var(--r, 320px); top: -8px;
+    width: 14px; height: 12px;
+    border-radius: 40% 60% 55% 45% / 60% 40% 50% 50%;
+    background: linear-gradient(135deg, #8a4a3c, #4a2620);
+    box-shadow: inset -2px -2px 3px rgba(0,0,0,0.5), 0 0 8px rgba(220, 100, 80, 0.3);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s, filter 0.15s;
+    transform: rotate(var(--rot, 0deg));
+  }
+  .asteroid .rock.closed {
+    background: linear-gradient(135deg, #3a3d55, #1a1c30);
+    box-shadow: inset -2px -2px 3px rgba(0,0,0,0.5);
+  }
+  .asteroid .rock:hover { filter: brightness(1.5); transform: rotate(var(--rot, 0deg)) scale(1.3); }
+
+  /* PR 소행성대 — 여러 점이 띄로 흐름 */
+  .pr-belt {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 720px; height: 720px;
+    margin-top: -360px; margin-left: -360px;
+    border-radius: 50%;
+    transform: rotateX(70deg);
+    animation: orbit-rot 60s linear infinite;
+    pointer-events: none;
+  }
+  .pr-belt .pr-dot {
+    position: absolute;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: oklch(0.72 0.15 150);
+    box-shadow: 0 0 6px oklch(0.72 0.15 150 / 0.6);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.15s;
+  }
+  .pr-belt .pr-dot.merged { background: oklch(0.68 0.15 290); box-shadow: 0 0 6px oklch(0.68 0.15 290 / 0.6); }
+  .pr-belt .pr-dot.draft { background: oklch(0.58 0.05 250); box-shadow: 0 0 4px rgba(150,160,200,0.4); }
+  .pr-belt .pr-dot:hover { transform: scale(2.2); }
+
+  /* 별 파티클 (스타검저) */
+  .stargazer {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 2px; height: 2px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 4px white;
+    pointer-events: none;
+    animation: twinkle-star 3s ease-in-out infinite;
+  }
+  @keyframes twinkle-star {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  /* ===== 정보 카드 (플로팅 ⇄ 고정 패널) ===== */
+  .info-card {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -240px);
+    width: 300px;
+    z-index: 20;
+    background: linear-gradient(145deg, rgba(35,38,71,0.55), rgba(18,19,42,0.55));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 22px;
+    padding: 18px 20px;
+    box-shadow:
+      10px 10px 28px var(--shadow-dark),
+      -6px -6px 18px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+    cursor: pointer;
+    transition:
+      top 0.8s cubic-bezier(0.65, 0, 0.15, 1),
+      left 0.8s cubic-bezier(0.65, 0, 0.15, 1),
+      transform 0.8s cubic-bezier(0.65, 0, 0.15, 1),
+      width 0.8s cubic-bezier(0.65, 0, 0.15, 1),
+      padding 0.8s cubic-bezier(0.65, 0, 0.15, 1),
+      border-radius 0.8s cubic-bezier(0.65, 0, 0.15, 1),
+      box-shadow 0.8s ease;
+    animation: card-float 6s ease-in-out infinite;
+    will-change: transform, width, top, left;
+  }
+  @keyframes card-float {
+    0%, 100% { margin-top: 0; }
+    50% { margin-top: -8px; }
+  }
+  .info-card.expanded {
+    top: 40px; left: 40px;
+    transform: translate(0, 0);
+    width: 420px;
+    padding: 28px 30px;
+    animation: none;
+    cursor: default;
+  }
+  .info-card .card-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease 0.4s;
+    align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .info-card.expanded .card-close { opacity: 1; pointer-events: auto; }
+  .info-card .card-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  /* 컨텐츠 크로스페이드 — mini는 flow, full은 absolute overlay */
+  .info-card .content-wrap {
+    position: relative;
+  }
+  .info-card .mini,
+  .info-card .full {
+    transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .info-card .mini {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.45s;
+  }
+  .info-card.expanded .mini {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.3s ease, visibility 0s linear 0.25s;
+  }
+  .info-card .full {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s;
+    transition-delay: 0s, 0s, 0.45s;
+  }
+  .info-card.expanded .full {
+    position: relative;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+    transition-delay: 0.45s, 0.45s, 0s;
+  }
+
+  .mini .m-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 6px;
+    opacity: 0.85;
+  }
+  .mini .m-title {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  .mini .m-title .mn-name { font-weight: 600; }
+  .mini .m-hint {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mini .m-hint .blip {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent-glow);
+    animation: blink-soft 1.4s ease-in-out infinite;
+  }
+  @keyframes blink-soft { 50% { opacity: 0.3; } }
+
+  .info-panel {
+    display: flex; flex-direction: column;
+    gap: 18px;
+  }
+  .breadcrumb {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  /* 플로팅 돌아가기 버튼 */
+  .top-back {
+    position: fixed;
+    top: 40px; right: 40px;
+    z-index: 30;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 18px 10px 12px;
+    white-space: nowrap;
+    background: linear-gradient(145deg, rgba(35,38,71,0.5), rgba(18,19,42,0.5));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 100px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    box-shadow:
+      4px 4px 12px var(--shadow-dark),
+      -2px -2px 8px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.05);
+    transition: color 0.15s;
+  }
+  .top-back:hover { color: var(--accent); }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(35,38,71,0.6), rgba(18,19,42,0.6));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow:
+      3px 3px 8px var(--shadow-dark),
+      -2px -2px 6px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: none;
+    transition: color 0.15s;
+  }
+  .back-btn:hover { color: var(--accent); }
+  .back-btn:active {
+    box-shadow:
+      inset 2px 2px 4px var(--shadow-dark),
+      inset -1px -1px 3px var(--shadow-light);
+  }
+
+  .repo-header h2 {
+    font-size: 32px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .repo-header h2 .owner { color: var(--text-muted); font-weight: 300; }
+  .repo-header h2 .name { color: var(--text); font-weight: 600; }
+  .repo-tagline {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+
+  .orbit-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .stat {
+    background: linear-gradient(145deg, rgba(35,38,71,0.35), rgba(18,19,42,0.35));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 16px 18px;
+    box-shadow:
+      6px 6px 14px var(--shadow-dark),
+      -4px -4px 10px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .stat .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat .k .ico { color: var(--accent); }
+  .stat .v {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .stat .delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    margin-top: 4px;
+  }
+
+  .moons-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex; align-items: center;
+  }
+  .moons-label::before, .moons-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+  .moons-label::before { margin-right: 12px; }
+  .moons-label::after { margin-left: 12px; }
+  .moon-list { display: flex; gap: 10px; }
+  .moon {
+    flex: 1;
+    background: linear-gradient(145deg, rgba(35,38,71,0.3), rgba(18,19,42,0.3));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow:
+      4px 4px 10px var(--shadow-dark),
+      -3px -3px 8px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .moon:hover { transform: translateY(-2px); }
+  .moon-orb {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    box-shadow: inset -3px -3px 5px rgba(0,0,0,0.5);
+  }
+  .moon:nth-child(1) .moon-orb { background: radial-gradient(circle at 30% 30%, #c6e6f7, #5d8fb5); }
+  .moon:nth-child(2) .moon-orb { background: radial-gradient(circle at 30% 30%, #e7c08f, #8a603a); }
+  .moon:nth-child(3) .moon-orb { background: radial-gradient(circle at 30% 30%, #b8a5d4, #4a3a6a); }
+  .moon .mn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .moon .ms {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .actions { display: flex; gap: 12px; margin-top: 4px; }
+  .btn {
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    padding: 14px 22px;
+    border-radius: 18px;
+    display: flex; align-items: center; gap: 10px;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: linear-gradient(145deg, oklch(0.78 0.14 220), oklch(0.62 0.16 220));
+    color: #0a0b14;
+    box-shadow:
+      4px 4px 12px var(--shadow-dark),
+      inset 0 0 0 1px rgba(255,255,255,0.15),
+      0 0 18px var(--accent-glow);
+  }
+  .btn-primary:active {
+    box-shadow:
+      inset 3px 3px 6px rgba(0,0,0,0.3),
+      inset -2px -2px 4px rgba(255,255,255,0.1);
+  }
+  .btn-ghost {
+    background: linear-gradient(145deg, rgba(35,38,71,0.5), rgba(18,19,42,0.5));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--text);
+    box-shadow:
+      4px 4px 10px var(--shadow-dark),
+      -3px -3px 8px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .btn-ghost:hover { color: var(--accent); }
+  .btn-ghost:active {
+    box-shadow:
+      inset 2px 2px 5px var(--shadow-dark),
+      inset -2px -2px 4px var(--shadow-light);
+  }
+
+  /* 행성 씬 등장 */
+  #planetScene.active .planet {
+    animation: planet-rotate 80s linear infinite, planet-in 0.8s ease backwards;
+  }
+  @keyframes planet-in {
+    from { transform: scale(0.6); opacity: 0; }
+  }
+  #planetScene.active .info-panel > * {
+    animation: panel-rise 0.6s ease backwards;
+  }
+  #planetScene.active .info-panel > *:nth-child(1) { animation-delay: 0.1s; }
+  #planetScene.active .info-panel > *:nth-child(2) { animation-delay: 0.2s; }
+  #planetScene.active .info-panel > *:nth-child(3) { animation-delay: 0.3s; }
+  #planetScene.active .info-panel > *:nth-child(4) { animation-delay: 0.4s; }
+  #planetScene.active .info-panel > *:nth-child(5) { animation-delay: 0.5s; }
+  @keyframes panel-rise {
+    from { opacity: 0; transform: translateY(12px); }
+  }
+
+  /* ===== 데이터 대시보드 (요소 클릭 시 오버레이) ===== */
+  .orbit-detail {
+    position: fixed;
+    bottom: 40px; left: 40px;
+    width: 360px;
+    z-index: 22;
+    background: linear-gradient(145deg, rgba(35,38,71,0.55), rgba(18,19,42,0.55));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 20px 22px;
+    box-shadow:
+      10px 10px 28px var(--shadow-dark),
+      -6px -6px 18px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.06);
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.35s;
+  }
+  .orbit-detail.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .orbit-detail .od-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .orbit-detail .od-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+  }
+  .orbit-detail .od-close {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .orbit-detail .od-close:hover { color: var(--text); }
+  .od-list { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; }
+  .od-list::-webkit-scrollbar { width: 4px; }
+  .od-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .od-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 12px;
+    background: rgba(18,19,42,0.35);
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+  }
+  .od-item .od-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 6px; flex-shrink: 0;
+  }
+  .od-item .od-dot.open { background: oklch(0.7 0.18 30); box-shadow: 0 0 6px oklch(0.7 0.18 30 / 0.5); }
+  .od-item .od-dot.closed { background: oklch(0.55 0.1 260); }
+  .od-item .od-dot.merged { background: oklch(0.68 0.15 290); box-shadow: 0 0 6px oklch(0.68 0.15 290 / 0.5); }
+  .od-item .od-dot.draft { background: oklch(0.58 0.05 250); }
+  .od-item .od-body { flex: 1; min-width: 0; }
+  .od-item .od-name {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .od-item .od-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== 코덱스 책 ===== */
+  .codex-book {
+    position: fixed;
+    bottom: 40px; right: 40px;
+    z-index: 20;
+    width: 110px; height: 150px;
+    cursor: pointer;
+    perspective: 800px;
+    transition: transform 0.3s;
+  }
+  .codex-book:hover { transform: translateY(-6px); }
+  .codex-book .cover {
+    position: absolute;
+    inset: 0;
+    border-radius: 6px 10px 10px 6px;
+    background:
+      linear-gradient(90deg, oklch(0.22 0.05 260) 0%, oklch(0.22 0.05 260) 8%, oklch(0.28 0.06 260) 8%, oklch(0.32 0.07 250) 100%);
+    box-shadow:
+      6px 8px 20px rgba(0,0,0,0.55),
+      inset 0 0 0 1px rgba(255,255,255,0.05),
+      inset -6px 0 12px rgba(0,0,0,0.4);
+  }
+  .codex-book .spine {
+    position: absolute;
+    top: 0; bottom: 0; left: 0; width: 10px;
+    background: linear-gradient(180deg, oklch(0.15 0.03 260), oklch(0.18 0.04 260));
+    box-shadow: inset -2px 0 4px rgba(0,0,0,0.6);
+  }
+  .codex-book .emblem {
+    position: absolute;
+    top: 50%; left: 55%; transform: translate(-50%, -50%);
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    border: 1px solid oklch(0.78 0.14 220 / 0.45);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+  }
+  .codex-book .emblem::before {
+    content: '◈';
+    position: absolute;
+    top: -7px; left: 50%; transform: translateX(-50%);
+    font-size: 10px;
+    background: oklch(0.28 0.06 260);
+    padding: 0 4px;
+  }
+  .codex-book .title-strip {
+    position: absolute;
+    bottom: 18px; left: 50%; transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* 책 모달 */
+  .codex-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 9, 18, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    pointer-events: none;
+    transition: background 0.5s, backdrop-filter 0.5s;
+  }
+  .codex-modal.active {
+    background: rgba(5, 6, 14, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    pointer-events: auto;
+  }
+  .codex-spread {
+    position: relative;
+    width: min(900px, 92vw);
+    height: min(560px, 78vh);
+    perspective: 2400px;
+    opacity: 0;
+    transform: scale(0.4) rotateX(40deg);
+    transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .codex-modal.active .codex-spread {
+    opacity: 1;
+    transform: scale(1) rotateX(6deg);
+    transition-delay: 0s, 0s;
+  }
+
+  /* 책 베이스 — 왼영/오른영 고정 포지션 */
+  .book {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    transform-style: preserve-3d;
+  }
+  .book-half {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(145deg, oklch(0.28 0.025 260), oklch(0.22 0.02 260));
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.08),
+      inset 0 0 60px rgba(0,0,0,0.45);
+  }
+  .book-half.left {
+    border-radius: 16px 2px 2px 16px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.08),
+      inset -20px 0 30px rgba(0,0,0,0.4),
+      -10px 10px 40px rgba(0,0,0,0.7);
+  }
+  .book-half.right {
+    border-radius: 2px 16px 16px 2px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.08),
+      inset 20px 0 30px rgba(0,0,0,0.4),
+      10px 10px 40px rgba(0,0,0,0.7);
+  }
+  /* 중앙 제본 그림자 */
+  .book-spine-shadow {
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 40px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.55) 50%, rgba(0,0,0,0));
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  #bookSheets {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform-style: preserve-3d;
+  }
+  #bookSheets .sheet { pointer-events: auto; }
+
+  /* 넘기는 시트(프론트+백) — 모두 오른쪽 반쪽에 쌓임 */
+  .sheet {
+    position: absolute;
+    top: 0; right: 0;
+    width: 50%;
+    height: 100%;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition: transform 0.9s cubic-bezier(0.55, 0.05, 0.25, 1);
+    /* default: 아직 넘기지 않음 */
+    transform: rotateY(0deg);
+  }
+  .sheet.flipped {
+    transform: rotateY(-180deg);
+  }
+  .sheet .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    padding: 40px 44px;
+    overflow: hidden;
+    background: linear-gradient(145deg, oklch(0.28 0.025 260), oklch(0.22 0.02 260));
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.08),
+      inset 0 0 60px rgba(0,0,0,0.4);
+  }
+  .sheet .face.front {
+    border-radius: 2px 16px 16px 2px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.08),
+      inset 20px 0 30px rgba(0,0,0,0.4);
+  }
+  .sheet .face.back {
+    border-radius: 16px 2px 2px 16px;
+    transform: rotateY(180deg);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.08),
+      inset -20px 0 30px rgba(0,0,0,0.4);
+  }
+  /* 종이 결의 왜곡 */
+  .sheet .face::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0) 5%, rgba(0,0,0,0) 95%, rgba(0,0,0,0.1) 100%);
+    border-radius: inherit;
+  }
+
+  .page-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .page-head .pg-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+  }
+  .page-head .pg-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .face h3 {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 18px;
+  }
+
+  /* 페이지 네비 가이드 */
+  .book-nav {
+    position: absolute;
+    bottom: -50px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 5;
+  }
+  .book-nav button {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(145deg, rgba(35,38,71,0.7), rgba(18,19,42,0.7));
+    backdrop-filter: blur(12px);
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 4px 4px 10px var(--shadow-dark), inset 0 0 0 1px rgba(255,255,255,0.06);
+    transition: color 0.15s, transform 0.15s;
+  }
+  .book-nav button:hover:not(:disabled) { color: var(--accent); }
+  .book-nav button:active:not(:disabled) { transform: scale(0.94); }
+  .book-nav button:disabled { opacity: 0.35; cursor: default; }
+  .book-nav .pager {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    min-width: 60px;
+    text-align: center;
+  }
+
+  /* 언어 비율 바 */
+  .lang-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .lang-bar > span { height: 100%; }
+  .lang-list { display: flex; flex-direction: column; gap: 10px; }
+  .lang-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+  }
+  .lang-row .sw { width: 10px; height: 10px; border-radius: 50%; }
+  .lang-row .nm { flex: 1; color: var(--text); }
+  .lang-row .pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  /* 히트맵 */
+  .heatmap {
+    display: grid;
+    grid-template-columns: repeat(26, 1fr);
+    gap: 3px;
+    margin-bottom: 18px;
+  }
+  .heatmap .cell {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+  }
+  .heatmap .cell.l1 { background: oklch(0.4 0.08 220 / 0.5); }
+  .heatmap .cell.l2 { background: oklch(0.55 0.12 220 / 0.7); }
+  .heatmap .cell.l3 { background: oklch(0.7 0.14 220 / 0.85); }
+  .heatmap .cell.l4 { background: oklch(0.82 0.14 220); box-shadow: 0 0 6px var(--accent-glow); }
+
+  .contrib-list { display: flex; flex-direction: column; gap: 10px; }
+  .contrib-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 10px;
+    background: rgba(18,19,42,0.5);
+    border-radius: 10px;
+  }
+  .contrib-row .avt {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, oklch(0.55 0.15 var(--h, 220)), oklch(0.35 0.1 var(--h, 220)));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset -2px -2px 3px rgba(0,0,0,0.4);
+  }
+  .contrib-row .nm { flex: 1; font-size: 12px; color: var(--text); }
+  .contrib-row .cnt { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  .stat-chunks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .stat-chunk {
+    background: rgba(18,19,42,0.4);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .stat-chunk .sck {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .stat-chunk .scv { font-size: 18px; font-weight: 600; }
+  .stat-chunk .scd { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); }
+
+  .codex-close {
+    position: absolute;
+    top: -14px; right: -14px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(145deg, var(--surface-hi), var(--surface-lo));
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 4px 4px 10px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.08);
+    z-index: 2;
+  }
+
+  /* Tweaks */
+  .tweaks {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 100;
+    background: linear-gradient(145deg, rgba(35,38,71,0.8), rgba(18,19,42,0.8));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 22px;
+    padding: 18px 20px;
+    box-shadow:
+      10px 10px 30px var(--shadow-dark),
+      -6px -6px 20px var(--shadow-light),
+      inset 0 0 0 1px rgba(255,255,255,0.04);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 240px;
+  }
+  .tweaks.active { display: flex; }
+  .tweaks h4 {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .tweak-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .tweak-btns { display: flex; gap: 6px; }
+  .tw-btn {
+    background: var(--surface-lo);
+    border: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-dim);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .tw-btn.on {
+    color: #0a0b14;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  @media (max-width: 900px) {
+    .planet { width: 260px; height: 260px; }
+    .commit-ring.r1 { width: 380px; height: 380px; }
+    .commit-ring.r2 { width: 430px; height: 430px; }
+    .commit-ring.r3 { width: 480px; height: 480px; }
+    .info-card { width: 260px; }
+    .info-card.expanded { width: calc(100vw - 32px); top: 16px; left: 16px; }
+    .orbit-detail { width: calc(100vw - 32px); bottom: 16px; left: 16px; }
+    .codex-book { bottom: 16px; right: 16px; width: 80px; height: 110px; }
+    .headline h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+  <div class="nebula-glow nebula-1"></div>
+  <div class="nebula-glow nebula-2"></div>
+  <div class="nebula-glow nebula-3"></div>
+
+  <!-- 원형 전환 오버레이 -->
+  <div class="circle-wipe" id="wipe"></div>
+
+  <!-- 검색 씬 -->
+  <div class="scene" id="searchScene">
+    <div class="search-stage">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-name">GITHUBLE</div>
+      </div>
+
+      <div class="headline">
+        <div class="label">레포 탐험 · v0.3</div>
+        <h1>깃허브 <em>우주</em>를<br>탐험해보세요</h1>
+        <p>모든 프로젝트는 하나의 행성이에요. 이름·언어·궤도로 검색하세요.</p>
+      </div>
+
+      <form class="search-box" id="searchForm">
+        <div class="search-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="m20 20-3.5-3.5"/>
+          </svg>
+        </div>
+        <input class="search-input" id="searchInput" type="text" placeholder="탐험할 레포를 검색하세요   예) nova/renderer" autocomplete="off" spellcheck="false">
+        <button class="search-btn" type="submit" aria-label="관측 시작">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </button>
+      </form>
+
+      <div class="suggestions">
+        <button class="chip" data-q="nova/renderer"><span class="dot"></span>nova/renderer</button>
+        <button class="chip" data-q="lumen/grid-engine"><span class="dot"></span>lumen/grid-engine</button>
+        <button class="chip" data-q="kite/orbit-db"><span class="dot"></span>kite/orbit-db</button>
+        <button class="chip" data-q="solace/hyperline"><span class="dot"></span>solace/hyperline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 로딩 씬 (심플) -->
+  <div class="scene" id="loadingScene">
+    <div class="scope-simple">
+      <div class="outer"></div>
+      <div class="halo"></div>
+      <div class="ring"></div>
+      <div class="orb"></div>
+      <div class="loading-label">
+        <div class="step">· 행성 관측 중 ·</div>
+        <div class="name" id="loadingName">nova / renderer</div>
+        <div class="progress-track"><div class="progress-bar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 행성 씬 -->
+  <div class="scene" id="planetScene">
+    <button class="top-back" id="backBtn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+      우주로 돌아가기
+    </button>
+
+    <div class="planet-layout">
+      <div class="planet-stage">
+        <div class="commit-ring r3" data-ring="commit"></div>
+        <div class="commit-ring r2" data-ring="commit"></div>
+        <div class="commit-ring r1" data-ring="commit"></div>
+        <div class="pr-belt" id="prBelt"></div>
+        <div class="planet"></div>
+        <div class="orbit-layer" id="asteroids"></div>
+        <div class="orbit-layer" id="moons"></div>
+        <div class="orbit-layer" id="stargazers"></div>
+      </div>
+    </div>
+
+    <!-- 정보 카드 (플로팅 → 고정 패널) -->
+    <div class="info-card" id="infoCard">
+      <button class="card-close" id="cardClose">✕</button>
+      <div class="content-wrap">
+      <div class="mini">
+        <div class="m-label">관측 대상</div>
+        <div class="m-title"><span class="mn-owner" id="miniOwner">nova</span> / <span class="mn-name" id="miniName">renderer</span></div>
+        <div class="m-hint"><span class="blip"></span>탭하여 자세히 보기</div>
+      </div>
+      <div class="full">
+        <div class="breadcrumb"><span id="sectorLabel">구역 7G · 궤도 04</span></div>
+        <div class="repo-header">
+          <h2><span class="owner" id="ownerLabel">nova</span><span class="owner"> / </span><span class="name" id="nameLabel">renderer</span></h2>
+          <div class="repo-tagline" id="taglineLabel">대기권 밖에서도 부드럽게 동작하는 경량 리액티브 렌더링 코어.</div>
+        </div>
+        <div class="orbit-stats">
+          <div class="stat"><div class="k"><span class="ico">◈</span>인력</div><div class="v">14.2k</div><div class="delta">+218</div></div>
+          <div class="stat"><div class="k"><span class="ico">◉</span>신호</div><div class="v">2,847</div><div class="delta">+41</div></div>
+          <div class="stat"><div class="k"><span class="ico">◐</span>공전체</div><div class="v">318</div><div class="delta">12 활동</div></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            행성 착륙
+          </button>
+          <button class="btn btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/></svg>
+            관측 계속
+          </button>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- 궤도 요소 클릭 시 디테일 -->
+    <div class="orbit-detail" id="orbitDetail">
+      <div class="od-head">
+        <span class="od-title" id="odTitle">이슈</span>
+        <button class="od-close" id="odClose">✕</button>
+      </div>
+      <div class="od-list" id="odList"></div>
+    </div>
+
+    <!-- 코덱스 책 -->
+    <div class="codex-book" id="codexBook">
+      <div class="cover">
+        <div class="spine"></div>
+        <div class="emblem">STAT</div>
+        <div class="title-strip">CODEX</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 책 펼침 모달 -->
+  <div class="codex-modal" id="codexModal">
+    <div class="codex-spread">
+      <button class="codex-close" id="codexClose">✕</button>
+      <div class="book">
+        <!-- 고정 좌/우 베이스 페이지 (항상 보이는 뒷면) -->
+        <div class="book-half left" id="bookBaseLeft"></div>
+        <div class="book-half right" id="bookBaseRight"></div>
+        <!-- 넘길 시트들은 JS가 주입 -->
+        <div id="bookSheets"></div>
+        <div class="book-spine-shadow"></div>
+      </div>
+      <div class="book-nav">
+        <button id="bookPrev" aria-label="이전 페이지">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="pager" id="bookPager">1 / 4</div>
+        <button id="bookNext" aria-label="다음 페이지">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tweaks -->
+  <div class="tweaks" id="tweaks">
+    <h4>Tweaks</h4>
+    <div class="tweak-row">
+      <span>색조</span>
+      <div class="tweak-btns" data-key="hue">
+        <button class="tw-btn" data-val="220">시안</button>
+        <button class="tw-btn" data-val="290">보라</button>
+        <button class="tw-btn" data-val="140">오로라</button>
+        <button class="tw-btn" data-val="30">앰버</button>
+      </div>
+    </div>
+    <div class="tweak-row">
+      <span>전환 속도</span>
+      <div class="tweak-btns" data-key="speed">
+        <button class="tw-btn" data-val="slow">느림</button>
+        <button class="tw-btn" data-val="normal">보통</button>
+        <button class="tw-btn" data-val="fast">빠름</button>
+      </div>
+    </div>
+    <div class="tweak-row">
+      <span>재생</span>
+      <div class="tweak-btns">
+        <button class="tw-btn" id="replayBtn">↺ 다시</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const TWEAKS = /*EDITMODE-BEGIN*/{
+    "hue": 220,
+    "speed": "normal"
+  }/*EDITMODE-END*/;
+
+  function applyTweaks() {
+    const h = TWEAKS.hue;
+    document.documentElement.style.setProperty('--accent', `oklch(0.78 0.14 ${h})`);
+    document.documentElement.style.setProperty('--accent-glow', `oklch(0.78 0.14 ${h} / 0.4)`);
+    document.documentElement.style.setProperty('--accent-soft', `oklch(0.78 0.14 ${h} / 0.12)`);
+  }
+  function syncTweaksUI() {
+    document.querySelectorAll('.tweak-btns[data-key]').forEach(g => {
+      const key = g.dataset.key;
+      g.querySelectorAll('.tw-btn').forEach(b => {
+        b.classList.toggle('on', String(TWEAKS[key]) === b.dataset.val);
+      });
+    });
+  }
+  document.querySelectorAll('.tweak-btns[data-key]').forEach(g => {
+    g.addEventListener('click', e => {
+      const b = e.target.closest('.tw-btn');
+      if (!b) return;
+      const key = g.dataset.key;
+      const val = isNaN(+b.dataset.val) ? b.dataset.val : +b.dataset.val;
+      TWEAKS[key] = val;
+      applyTweaks();
+      syncTweaksUI();
+      window.parent.postMessage({type:'__edit_mode_set_keys', edits: {[key]: val}}, '*');
+    });
+  });
+  document.getElementById('replayBtn').addEventListener('click', resetToSearch);
+
+  window.addEventListener('message', e => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode') document.getElementById('tweaks').classList.add('active');
+    if (d.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('active');
+  });
+  window.parent.postMessage({type: '__edit_mode_available'}, '*');
+
+  // ===== 플로우 =====
+  const searchScene = document.getElementById('searchScene');
+  const loadingScene = document.getElementById('loadingScene');
+  const planetScene = document.getElementById('planetScene');
+  const loadingName = document.getElementById('loadingName');
+  const searchInput = document.getElementById('searchInput');
+  const wipe = document.getElementById('wipe');
+
+  const REPO_DATA = {
+    'nova/renderer': {
+      owner: 'nova', name: 'renderer',
+      tagline: '대기권 밖에서도 부드럽게 동작하는 경량 리액티브 렌더링 코어. 별빛 리프레시 레이트에 최적화.',
+      stats: ['14.2k', '2,847', '318'],
+      moons: [['/core','TS · 42개 파일'], ['/atlas','RS · 18개 파일'], ['/probe','GO · 9개 파일']],
+      hueShift: 0,
+      issues: [
+        {t:'렌더 패스가 64k 삼각형 이상에서 드롭됨', state:'open', no:'#482', meta:'core · 3일 전'},
+        {t:'메모리 누수 in signal subscription', state:'open', no:'#479', meta:'signals · 5일 전'},
+        {t:'SSR 환경에서 hydration 불일치', state:'open', no:'#471', meta:'ssr · 1주 전'},
+        {t:'타입 추론 실패 (Fragment 내부)', state:'closed', no:'#465', meta:'types · 2주 전'},
+        {t:'이벤트 위임 중복 등록', state:'closed', no:'#460', meta:'events · 3주 전'},
+      ],
+      prs: [
+        {t:'feat: parallel reconciler for large trees', state:'open', no:'#512', meta:'+842 −120'},
+        {t:'perf: inline style dedup', state:'merged', no:'#508', meta:'+64 −28'},
+        {t:'fix: cleanup onUnmount race', state:'merged', no:'#506', meta:'+12 −8'},
+        {t:'chore: upgrade build toolchain', state:'draft', no:'#503', meta:'+420 −380'},
+      ],
+      commits: {last90: '1,842', monthly: '64', delta:'+12%'},
+      langs: [
+        {n:'TypeScript', p:62, h:220},
+        {n:'Rust', p:22, h:20},
+        {n:'Go', p:10, h:180},
+        {n:'Shell', p:4, h:140},
+        {n:'기타', p:2, h:280},
+      ],
+      contributors: [
+        {n:'soyun.oh', c:'842', h:220},
+        {n:'minjae.k', c:'618', h:30},
+        {n:'haneul.p', c:'412', h:150},
+        {n:'junho.l', c:'284', h:280},
+        {n:'serin.c', c:'196', h:90},
+      ]
+    },
+    'lumen/grid-engine': {
+      owner: 'lumen', name: 'grid-engine',
+      tagline: '테라바이트급 데이터 메시를 위한 준탄성 그리드 물리 엔진. 궤도 시험 완료, 진공 밀봉.',
+      stats: ['8.9k', '1,204', '192'],
+      moons: [['/mesh','RS · 64개 파일'], ['/sim','TS · 12개 파일'], ['/util','GO · 7개 파일']],
+      hueShift: 70,
+      issues: [
+        {t:'mesh 충돌 감지 false positive', state:'open', no:'#218', meta:'2일 전'},
+        {t:'sim step에서 NaN 전파', state:'open', no:'#214', meta:'6일 전'},
+        {t:'util/rand seed 충돌', state:'closed', no:'#208', meta:'2주 전'},
+      ],
+      prs: [
+        {t:'feat: SIMD accelerated traversal', state:'open', no:'#260', meta:'+1,204 −88'},
+        {t:'refactor: extract core types', state:'merged', no:'#257', meta:'+412 −402'},
+      ],
+      commits: {last90:'924', monthly:'38', delta:'+6%'},
+      langs: [
+        {n:'Rust', p:74, h:20}, {n:'TypeScript', p:16, h:220},
+        {n:'Go', p:8, h:180}, {n:'기타', p:2, h:280}
+      ],
+      contributors: [
+        {n:'jihu.s', c:'614', h:30}, {n:'minho.y', c:'392', h:220}, {n:'dahyun.l', c:'168', h:150}
+      ]
+    },
+    'kite/orbit-db': {
+      owner: 'kite', name: 'orbit-db',
+      tagline: '지오데식 경로를 따라 동기화되는 분산 추가 전용 원장. 무중력, 무지연.',
+      stats: ['21.5k', '4,102', '612'],
+      moons: [['/ledger','RS · 96개 파일'], ['/gossip','TS · 28개 파일'], ['/cli','GO · 14개 파일']],
+      hueShift: -80,
+      issues: [
+        {t:'gossip 파티션 시 리더 선출 실패', state:'open', no:'#1204', meta:'1일 전'},
+        {t:'CLI 출력 인코딩 깨짐 (Windows)', state:'open', no:'#1198', meta:'4일 전'},
+      ],
+      prs: [
+        {t:'feat: zero-copy append path', state:'open', no:'#1310', meta:'+2,100 −420'},
+        {t:'fix: gossip backpressure', state:'merged', no:'#1308', meta:'+84 −22'},
+        {t:'docs: clarify replication model', state:'merged', no:'#1306', meta:'+180 −0'},
+      ],
+      commits: {last90:'3,208', monthly:'124', delta:'+22%'},
+      langs: [
+        {n:'Rust', p:54, h:20}, {n:'TypeScript', p:26, h:220},
+        {n:'Go', p:16, h:180}, {n:'기타', p:4, h:280}
+      ],
+      contributors: [
+        {n:'jaehyun.w', c:'1,420', h:20}, {n:'seoyeon.b', c:'982', h:220}, {n:'kyungsoo.h', c:'612', h:150}
+      ]
+    },
+    'solace/hyperline': {
+      owner: 'solace', name: 'hyperline',
+      tagline: '비동기 광원뿔을 가로지르는 타입 세이프 스트리밍 프로토콜. Solace 기반 위에 구축.',
+      stats: ['6.3k', '842', '104'],
+      moons: [['/proto','TS · 31개 파일'], ['/bench','RS · 8개 파일'], ['/docs','MD · 22개 파일']],
+      hueShift: 140,
+      issues: [
+        {t:'backpressure 측정 불안정', state:'open', no:'#88', meta:'3일 전'},
+      ],
+      prs: [
+        {t:'feat: multi-channel muxer', state:'draft', no:'#120', meta:'+512 −120'},
+        {t:'perf: reduce alloc on hot path', state:'merged', no:'#118', meta:'+42 −38'},
+      ],
+      commits: {last90:'612', monthly:'28', delta:'안정'},
+      langs: [
+        {n:'TypeScript', p:78, h:220}, {n:'Rust', p:14, h:20}, {n:'기타', p:8, h:280}
+      ],
+      contributors: [
+        {n:'chanwoo.n', c:'384', h:220}, {n:'haeun.j', c:'240', h:90}
+      ]
+    }
+  };
+
+  function findRepo(q) {
+    if (!q) return REPO_DATA['nova/renderer'];
+    const k = q.trim().toLowerCase();
+    if (REPO_DATA[k]) return REPO_DATA[k];
+    const parts = k.split('/');
+    return {
+      owner: parts[0] || 'unknown',
+      name: parts[1] || parts[0] || 'planet-x',
+      tagline: '미등록 행성입니다. 초기 접촉을 통해 궤도 특성을 계산 중입니다.',
+      stats: [
+        (Math.random()*20+1).toFixed(1) + 'k',
+        String(Math.floor(Math.random()*4000+200)),
+        String(Math.floor(Math.random()*500+50))
+      ],
+      moons: [['/main','TS · ?'],['/lib','RS · ?'],['/test','JS · ?']],
+      hueShift: Math.floor(Math.random()*360),
+      issues: [{t:'관측 데이터 수집 중...', state:'open', no:'#001', meta:'just now'}],
+      prs: [{t:'분석 진행 중', state:'draft', no:'#001', meta:'—'}],
+      commits: {last90:'?', monthly:'?', delta:'?'},
+      langs: [{n:'Unknown', p:100, h:200}],
+      contributors: [{n:'unknown', c:'?', h:220}]
+    };
+  }
+
+  let currentRepo = null;
+
+  function loadPlanetInto(repo) {
+    currentRepo = repo;
+    document.getElementById('ownerLabel').textContent = repo.owner;
+    document.getElementById('nameLabel').textContent = repo.name;
+    document.getElementById('taglineLabel').textContent = repo.tagline;
+    document.getElementById('miniOwner').textContent = repo.owner;
+    document.getElementById('miniName').textContent = repo.name;
+    const stats = document.querySelectorAll('.info-card .stat .v');
+    stats[0].textContent = repo.stats[0];
+    stats[1].textContent = repo.stats[1];
+    stats[2].textContent = repo.stats[2];
+    const baseHue = TWEAKS.hue + (repo.hueShift || 0);
+    document.querySelector('.planet').style.background =
+      `radial-gradient(circle at 70% 70%, oklch(0.15 0.08 ${baseHue+40}) 0%, transparent 60%), ` +
+      `radial-gradient(circle at 30% 25%, oklch(0.85 0.1 ${baseHue}) 0%, oklch(0.62 0.16 ${baseHue}) 30%, oklch(0.32 0.12 ${baseHue+40}) 70%, oklch(0.18 0.08 ${baseHue+60}) 100%)`;
+
+    buildOrbitals(repo);
+    buildCodex(repo);
+  }
+
+  function buildOrbitals(repo) {
+    // 이슈 운석
+    const ast = document.getElementById('asteroids');
+    ast.innerHTML = '';
+    repo.issues.forEach((iss, i) => {
+      const orbit = document.createElement('div');
+      orbit.className = 'asteroid';
+      const dur = 20 + Math.random()*18;
+      const r = 270 + Math.random()*30;
+      const startAngle = (i / repo.issues.length) * 360 + Math.random()*30;
+      orbit.style.cssText = `--dur:${dur}s; animation-delay:-${(startAngle/360)*dur}s;`;
+      const rock = document.createElement('div');
+      rock.className = 'rock' + (iss.state === 'closed' ? ' closed' : '');
+      rock.style.cssText = `--r:${r}px; --rot:${Math.random()*360}deg;`;
+      rock.title = `${iss.no} ${iss.t}`;
+      rock.addEventListener('click', (e) => { e.stopPropagation(); showOrbitDetail('issue', repo); });
+      orbit.appendChild(rock);
+      ast.appendChild(orbit);
+    });
+
+    // PR 소행성대 — 많은 점
+    const belt = document.getElementById('prBelt');
+    belt.innerHTML = '';
+    const prCount = Math.max(repo.prs.length * 6, 18);
+    for (let i = 0; i < prCount; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'pr-dot';
+      if (i % 5 === 0) dot.classList.add('merged');
+      else if (i % 7 === 0) dot.classList.add('draft');
+      const angle = (i / prCount) * 360 + Math.random()*4;
+      const rad = 350 + (Math.random()-0.5)*14;
+      const x = 360 + Math.cos(angle * Math.PI/180) * rad;
+      const y = 360 + Math.sin(angle * Math.PI/180) * rad;
+      dot.style.left = x + 'px';
+      dot.style.top = y + 'px';
+      dot.title = 'Pull Request';
+      dot.addEventListener('click', (e) => { e.stopPropagation(); showOrbitDetail('pr', repo); });
+      belt.appendChild(dot);
+    }
+
+    // 위성
+    const mn = document.getElementById('moons');
+    mn.innerHTML = '';
+    const moonColors = [
+      'radial-gradient(circle at 30% 30%, #c6e6f7, #5d8fb5)',
+      'radial-gradient(circle at 30% 30%, #e7c08f, #8a603a)',
+      'radial-gradient(circle at 30% 30%, #b8a5d4, #4a3a6a)',
+    ];
+    repo.moons.forEach((m, i) => {
+      const orbit = document.createElement('div');
+      orbit.className = 'moon-orb-sat';
+      const dur = 28 + i*6;
+      const r = 310 + i*18;
+      orbit.style.cssText = `--dur:${dur}s; animation-delay:-${(i/repo.moons.length)*dur}s;`;
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.cssText = `--r:${r}px; background: ${moonColors[i%3]};`;
+      dot.title = m[0] + ' · ' + m[1];
+      dot.addEventListener('click', (e) => { e.stopPropagation(); showOrbitDetail('moon', repo); });
+      orbit.appendChild(dot);
+      mn.appendChild(orbit);
+    });
+
+    // 스타검저 별들 (배경)
+    const sg = document.getElementById('stargazers');
+    sg.innerHTML = '';
+    const count = 20;
+    for (let i = 0; i < count; i++) {
+      const star = document.createElement('div');
+      star.className = 'stargazer';
+      const a = Math.random() * Math.PI * 2;
+      const r = 380 + Math.random() * 140;
+      star.style.transform = `translate(${Math.cos(a)*r}px, ${Math.sin(a)*r}px)`;
+      star.style.animationDelay = (Math.random()*3) + 's';
+      sg.appendChild(star);
+    }
+  }
+
+  function showOrbitDetail(kind, repo) {
+    const od = document.getElementById('orbitDetail');
+    const title = document.getElementById('odTitle');
+    const list = document.getElementById('odList');
+    list.innerHTML = '';
+    if (kind === 'issue') {
+      title.textContent = `이슈 · ${repo.issues.length}건`;
+      repo.issues.forEach(it => {
+        list.insertAdjacentHTML('beforeend',
+          `<div class="od-item"><div class="od-dot ${it.state}"></div><div class="od-body"><div class="od-name">${it.t}</div><div class="od-meta">${it.no} · ${it.meta}</div></div></div>`);
+      });
+    } else if (kind === 'pr') {
+      title.textContent = `풀 리퀄스트 · ${repo.prs.length}건`;
+      repo.prs.forEach(it => {
+        list.insertAdjacentHTML('beforeend',
+          `<div class="od-item"><div class="od-dot ${it.state}"></div><div class="od-body"><div class="od-name">${it.t}</div><div class="od-meta">${it.no} · ${it.meta}</div></div></div>`);
+      });
+    } else if (kind === 'moon') {
+      title.textContent = `위성 모듈 · ${repo.moons.length}개`;
+      repo.moons.forEach(m => {
+        list.insertAdjacentHTML('beforeend',
+          `<div class="od-item"><div class="od-dot open"></div><div class="od-body"><div class="od-name">${m[0]}</div><div class="od-meta">${m[1]}</div></div></div>`);
+      });
+    } else if (kind === 'commit') {
+      title.textContent = `커밋 고리`;
+      const c = repo.commits;
+      list.insertAdjacentHTML('beforeend',
+        `<div class="od-item"><div class="od-dot merged"></div><div class="od-body"><div class="od-name">최근 90일: ${c.last90} 커밋</div><div class="od-meta">월평균 ${c.monthly} · ${c.delta}</div></div></div>`);
+    }
+    od.classList.add('active');
+  }
+
+  function buildCodex(repo) {
+    // 4개 페이지 구성: [표지 좌, 언어 우] [활동 좌, 기여자 우] [릴리스 좌, README 우] [후기 좌, 닫기 우]
+    const p1_right_langBar = repo.langs.map(l => `<span style="width:${l.p}%;background:oklch(0.65 0.15 ${l.h});"></span>`).join('');
+    const p1_right_langList = repo.langs.map(l => `<div class="lang-row"><span class="sw" style="background:oklch(0.65 0.15 ${l.h});"></span><span class="nm">${l.n}</span><span class="pct">${l.p}%</span></div>`).join('');
+
+    // heatmap
+    let heatmapCells = '';
+    for (let i = 0; i < 182; i++) {
+      const v = Math.random();
+      const lvl = v < 0.4 ? '' : v < 0.65 ? 'l1' : v < 0.82 ? 'l2' : v < 0.94 ? 'l3' : 'l4';
+      heatmapCells += `<div class="cell ${lvl}"></div>`;
+    }
+    const contribRows = repo.contributors.map(c =>
+      `<div class="contrib-row"><div class="avt" style="--h:${c.h};">${c.n.slice(0,2).toUpperCase()}</div><div class="nm">${c.n}</div><div class="cnt">${c.c} 커밋</div></div>`
+    ).join('');
+
+    // 페이지 컨텐츠 — 인덱스 순: 0=표지, 1=언어, 2=활동, 3=기여자, 4=릴리스, 5=README, 6=요약, 7=끝
+    const pages = [
+      // 0: 표지
+      `<div class="page-head"><span class="pg-title">CODEX</span><span class="pg-num">표지</span></div>
+       <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;height:calc(100% - 60px);padding-right:20px;">
+         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.3em;color:var(--accent);margin-bottom:16px;">행성 관측 기록</div>
+         <h3 style="font-size:32px;font-weight:300;margin-bottom:12px;line-height:1.15;"><span style="color:var(--text-muted);">${repo.owner}</span> /<br><span style="font-weight:600;">${repo.name}</span></h3>
+         <div style="font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:28px;">${repo.tagline}</div>
+         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:0.15em;">→ 페이지를 넘겨 자세한 기록을 확인하세요</div>
+       </div>`,
+      // 1: 언어 분포
+      `<div class="page-head"><span class="pg-title">I · 언어 분포</span><span class="pg-num">01</span></div>
+       <h3>이 행성의 구성</h3>
+       <div class="lang-bar">${p1_right_langBar}</div>
+       <div class="lang-list">${p1_right_langList}</div>`,
+      // 2: 활동
+      `<div class="page-head"><span class="pg-title">II · 활동 지표</span><span class="pg-num">02</span></div>
+       <h3>최근 움직임</h3>
+       <div class="stat-chunks">
+         <div class="stat-chunk"><div class="sck">최근 90일 커밋</div><div class="scv">${repo.commits.last90}</div><div class="scd">${repo.commits.delta}</div></div>
+         <div class="stat-chunk"><div class="sck">월평균 PR</div><div class="scv">${repo.commits.monthly}</div><div class="scd">안정</div></div>
+       </div>
+       <div class="heatmap">${heatmapCells}</div>
+       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:0.15em;margin-top:12px;">26주 × 7일 커밋 빈도</div>`,
+      // 3: 기여자
+      `<div class="page-head"><span class="pg-title">III · 기여자</span><span class="pg-num">03</span></div>
+       <h3>궤도 위의 사람들</h3>
+       <div class="contrib-list">${contribRows}</div>`,
+      // 4: 릴리스
+      `<div class="page-head"><span class="pg-title">IV · 릴리스</span><span class="pg-num">04</span></div>
+       <h3>주요 버전</h3>
+       <div style="display:flex;flex-direction:column;gap:14px;">
+         <div style="padding:12px 14px;background:rgba(18,19,42,0.4);border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);">
+           <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);margin-bottom:4px;">v${(Math.random()*3+1).toFixed(1)}.${Math.floor(Math.random()*9)}.0 <span style="color:var(--text-muted);font-size:10px;">· 최신</span></div>
+           <div style="font-size:11px;color:var(--text-dim);">안정화 릴리스 · 3주 전</div>
+         </div>
+         <div style="padding:12px 14px;background:rgba(18,19,42,0.4);border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);">
+           <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);margin-bottom:4px;">v${(Math.random()*2+1).toFixed(1)}.${Math.floor(Math.random()*9)}.0</div>
+           <div style="font-size:11px;color:var(--text-dim);">성능 개선 · 2달 전</div>
+         </div>
+         <div style="padding:12px 14px;background:rgba(18,19,42,0.4);border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);">
+           <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);margin-bottom:4px;">v${(Math.random()+1).toFixed(1)}.0.0</div>
+           <div style="font-size:11px;color:var(--text-dim);">메이저 버전 · 6달 전</div>
+         </div>
+       </div>`,
+      // 5: README 요약
+      `<div class="page-head"><span class="pg-title">V · 요약</span><span class="pg-num">05</span></div>
+       <h3>개요</h3>
+       <div style="font-size:13px;color:var(--text-dim);line-height:1.75;">
+         <p style="margin-bottom:12px;">${repo.tagline}</p>
+         <p style="margin-bottom:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:11px;">\`\`\`<br>$ npm install ${repo.owner}-${repo.name}<br>\`\`\`</p>
+         <p>이 행성은 ${repo.contributors.length}명의 항해자와 ${repo.issues.length + repo.prs.length}개의 활성 궤도체와 함께 운영되고 있습니다.</p>
+       </div>`,
+      // 6: 요약 지표
+      `<div class="page-head"><span class="pg-title">VI · 총평</span><span class="pg-num">06</span></div>
+       <h3>궤도 안정성</h3>
+       <div style="display:flex;flex-direction:column;gap:12px;">
+         <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:0.2em;margin-bottom:6px;">활동 강도</div><div style="height:6px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;"><div style="height:100%;width:78%;background:linear-gradient(90deg,var(--accent),oklch(0.82 0.14 220));"></div></div></div>
+         <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:0.2em;margin-bottom:6px;">커뮤니티 응집도</div><div style="height:6px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;"><div style="height:100%;width:64%;background:linear-gradient(90deg,var(--accent),oklch(0.82 0.14 220));"></div></div></div>
+         <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:0.2em;margin-bottom:6px;">문서화 밀도</div><div style="height:6px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;"><div style="height:100%;width:52%;background:linear-gradient(90deg,var(--accent),oklch(0.82 0.14 220));"></div></div></div>
+         <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:0.2em;margin-bottom:6px;">테스트 커버리지</div><div style="height:6px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;"><div style="height:100%;width:86%;background:linear-gradient(90deg,var(--accent),oklch(0.82 0.14 220));"></div></div></div>
+       </div>`,
+      // 7: 뒷표지
+      `<div class="page-head"><span class="pg-title">CODEX</span><span class="pg-num">뒷표지</span></div>
+       <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:calc(100% - 60px);">
+         <div style="width:60px;height:60px;border-radius:50%;border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:20px;">END</div>
+         <div style="font-size:14px;color:var(--text-dim);line-height:1.6;max-width:260px;">관측 종료. 이 행성의 기록을 읽어주셔서 감사합니다. 언제든 다시 방문해주세요.</div>
+       </div>`
+    ];
+
+    // 베이스 페이지(가장 아래) = 첫 좌/마지막 우
+    const baseLeft = document.getElementById('bookBaseLeft');
+    const baseRight = document.getElementById('bookBaseRight');
+    baseLeft.innerHTML = `<div style="position:absolute;inset:0;padding:40px 44px;overflow:hidden;">${pages[0]}</div>`;
+    baseRight.innerHTML = `<div style="position:absolute;inset:0;padding:40px 44px;overflow:hidden;">${pages[7]}</div>`;
+
+    // 시트 = (pages.length - 2) / 2 = 3장
+    // 시트 i: front = pages[1 + i*2], back = pages[2 + i*2]
+    const sheetsRoot = document.getElementById('bookSheets');
+    sheetsRoot.innerHTML = '';
+    const sheetCount = (pages.length - 2) / 2;
+    for (let i = 0; i < sheetCount; i++) {
+      const sheet = document.createElement('div');
+      sheet.className = 'sheet';
+      // z-index: 넘기지 않은 시트는 위에 있어야 함 (뒤에서부터 1번 시트가 맨 위)
+      sheet.style.zIndex = String(sheetCount - i);
+      sheet.innerHTML = `
+        <div class="face front">${pages[1 + i*2]}</div>
+        <div class="face back">${pages[2 + i*2]}</div>
+      `;
+      sheetsRoot.appendChild(sheet);
+    }
+
+    // 페이지 상태 초기화
+    bookPageIdx = 0;
+    updateBookNav();
+  }
+
+  // === 책 페이지 네비게이션 ===
+  let bookPageIdx = 0; // 0 = 표지+시트1 front, 1 = 시트1 back + 시트2 front, ... 등
+  function updateBookNav() {
+    const sheets = document.querySelectorAll('.sheet');
+    const total = sheets.length + 1; // 스프레드 개수 = 시트 + 1
+    sheets.forEach((s, i) => {
+      if (i < bookPageIdx) {
+        s.classList.add('flipped');
+        // 넘긴 시트는 뒤로 보내기 (z 순서 뒤집기)
+        s.style.zIndex = String(i + 1);
+      } else {
+        s.classList.remove('flipped');
+        s.style.zIndex = String(sheets.length - i + 100);
+      }
+    });
+    document.getElementById('bookPager').textContent = `${bookPageIdx + 1} / ${total}`;
+    document.getElementById('bookPrev').disabled = bookPageIdx === 0;
+    document.getElementById('bookNext').disabled = bookPageIdx >= total - 1;
+  }
+
+  // 요소 클릭 핸들러
+  document.querySelectorAll('.commit-ring').forEach(r => {
+    r.addEventListener('click', (e) => { e.stopPropagation(); if (currentRepo) showOrbitDetail('commit', currentRepo); });
+  });
+
+  // 정보 카드 확장 / 축소
+  const infoCard = document.getElementById('infoCard');
+  infoCard.addEventListener('click', (e) => {
+    if (e.target.closest('.card-close')) return;
+    if (!infoCard.classList.contains('expanded')) {
+      infoCard.classList.add('expanded');
+    }
+  });
+  document.getElementById('cardClose').addEventListener('click', (e) => {
+    e.stopPropagation();
+    infoCard.classList.remove('expanded');
+  });
+
+  // 궤도 디테일 닫기
+  document.getElementById('odClose').addEventListener('click', () => {
+    document.getElementById('orbitDetail').classList.remove('active');
+  });
+
+  // 책
+  const codexModal = document.getElementById('codexModal');
+  document.getElementById('codexBook').addEventListener('click', () => {
+    codexModal.classList.add('active');
+  });
+  document.getElementById('codexClose').addEventListener('click', () => {
+    codexModal.classList.remove('active');
+  });
+  document.getElementById('bookPrev').addEventListener('click', () => {
+    if (bookPageIdx > 0) { bookPageIdx--; updateBookNav(); }
+  });
+  document.getElementById('bookNext').addEventListener('click', () => {
+    const total = document.querySelectorAll('.sheet').length + 1;
+    if (bookPageIdx < total - 1) { bookPageIdx++; updateBookNav(); }
+  });
+  codexModal.addEventListener('click', (e) => {
+    if (e.target === codexModal) codexModal.classList.remove('active');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      codexModal.classList.remove('active');
+      document.getElementById('orbitDetail').classList.remove('active');
+      if (infoCard.classList.contains('expanded')) infoCard.classList.remove('expanded');
+    }
+  });
+
+  let busy = false;
+  function startObservation(query) {
+    if (busy) return;
+    busy = true;
+    const repo = findRepo(query);
+    loadingName.textContent = repo.owner + ' / ' + repo.name;
+
+    const speedMap = { slow: 3.2, normal: 2.4, fast: 1.4 };
+    const dur = speedMap[TWEAKS.speed] || 2.4;
+
+    // 프로그레스바 리셋
+    const pb = document.querySelector('.progress-bar');
+    const orb = document.querySelector('.orb');
+    pb.style.animation = 'none';
+    orb.style.animation = 'none';
+    pb.offsetHeight;
+    pb.style.animation = `progress ${dur}s ease-in forwards`;
+    orb.style.animation = `orb-grow ${dur}s ease-in-out forwards`;
+
+    // 1. 검색씬 페이드아웃
+    searchScene.classList.add('hiding');
+    // 2. 로딩씬 표시
+    setTimeout(() => loadingScene.classList.add('active'), 250);
+
+    // 3. 로딩 끝나면 심플 원형 와이프 → 행성씬
+    setTimeout(() => {
+      wipe.style.transition = 'transform 0.7s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.3s';
+      wipe.classList.add('in');
+      loadPlanetInto(repo);
+    }, 250 + dur * 1000);
+
+    setTimeout(() => {
+      loadingScene.classList.remove('active');
+      planetScene.classList.add('active');
+    }, 250 + dur * 1000 + 400);
+
+    // 4. 와이프 페이드아웃
+    setTimeout(() => {
+      wipe.classList.remove('in');
+      wipe.classList.add('out');
+    }, 250 + dur * 1000 + 600);
+
+    setTimeout(() => {
+      wipe.style.transition = '';
+      wipe.classList.remove('out');
+      busy = false;
+    }, 250 + dur * 1000 + 1200);
+  }
+
+  function resetToSearch() {
+    planetScene.classList.remove('active');
+    loadingScene.classList.remove('active');
+    document.getElementById('orbitDetail').classList.remove('active');
+    document.getElementById('codexModal').classList.remove('active');
+    infoCard.classList.remove('expanded');
+    setTimeout(() => {
+      searchScene.classList.remove('hiding');
+      busy = false;
+    }, 300);
+  }
+
+  document.getElementById('searchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    startObservation(searchInput.value || 'nova/renderer');
+  });
+  document.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      searchInput.value = c.dataset.q;
+      startObservation(c.dataset.q);
+    });
+  });
+  document.getElementById('backBtn').addEventListener('click', resetToSearch);
+
+  applyTweaks();
+  syncTweaksUI();
+</script>
+</body>
+</html>
