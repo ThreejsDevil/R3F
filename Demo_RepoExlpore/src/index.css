@@ -14,6 +14,19 @@
   --color-accent: var(--accent);
   --color-accent-glow: var(--accent-glow);
   --color-accent-soft: var(--accent-soft);
+
+  --animate-slideIn: slideIn 0.5s forwards;
+  --animate-fadeIn: fadeIn 0.3s ease-in;
+
+  @keyframes slideIn {
+    0% { transform: perspective(1000px) rotateY(-15deg) translateX(-50px); opacity: 0; }
+    100% { transform: perspective(1000px) rotateY(0deg) translateX(0); opacity: 1; }
+  }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
 }
 
 :root {

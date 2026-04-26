@@ -1,10 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { GithubSpaceScene } from './components/GithubSpaceScene'
-import { useGithubData } from './hooks/useGithubData'
-import { RepoExplorerOverlay } from './components/RepoExplorerOverlay'
-import { PlanetCard } from './components/PlanetCard'
-import { CodexBook } from './components/CodexBook'
-import { getMockPages } from './components/CodexPages'
+import { GithubSpaceScene } from './features/explorer/components/GithubSpaceScene'
+import { useGithubData } from './features/explorer/hooks/useGithubData'
+import { RepoExplorerOverlay } from './features/explorer/components/RepoExplorerOverlay'
+import { PlanetCard } from './features/explorer/components/PlanetCard'
+import { CodexBook } from './features/explorer/components/CodexBook'
+import { getMockPages } from './utils/mockData'
 import { useState } from 'react'
 
 const queryClient = new QueryClient()

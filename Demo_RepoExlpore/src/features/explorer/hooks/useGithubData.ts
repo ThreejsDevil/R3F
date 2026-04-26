@@ -28,7 +28,8 @@ const MOCK_REPOS: RepoData[] = [
   },
 ];
 
-const fetchMockData = async (query: string): Promise<RepoData[]> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const fetchMockData = async (_query: string): Promise<RepoData[]> => {
   // Simulate network delay
   await new Promise((resolve) => setTimeout(resolve, 800));
   // In a real scenario, this would filter or fetch based on `query`

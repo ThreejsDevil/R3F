@@ -10,7 +10,7 @@ interface RepoExplorerOverlayProps {
   onReturnComplete?: () => void;
 }
 
-export function RepoExplorerOverlay({ onSearch, isSearching, searchComplete, onReveal, isReturning, onReturnComplete }: RepoExplorerOverlayProps) {
+export function RepoExplorerOverlay({ onSearch, searchComplete, onReveal, isReturning, onReturnComplete }: RepoExplorerOverlayProps) {
   const [query, setQuery] = useState('');
   const [uiState, setUiState] = useState<'search' | 'loading' | 'wiping-in' | 'wiping-out' | 'hidden' | 'preparing-return'>('search');
   const [loadingName, setLoadingName] = useState('');
@@ -55,7 +55,7 @@ export function RepoExplorerOverlay({ onSearch, isSearching, searchComplete, onR
 
       return () => clearTimeout(timer);
     }
-  }, [uiState, searchComplete]);
+  }, [uiState, searchComplete, onReveal]);
 
   const returnSequenceRef = useRef(false);
 
@@ -80,7 +80,7 @@ export function RepoExplorerOverlay({ onSearch, isSearching, searchComplete, onR
         }, 700);
       }, 20); // Small delay to let browser process the mount before animating
     }
-  }, [isReturning]);
+  }, [isReturning, onReturnComplete]);
 
 
   // Derived states for CSS classes

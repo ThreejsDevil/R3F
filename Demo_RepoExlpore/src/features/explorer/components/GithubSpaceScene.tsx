@@ -6,10 +6,10 @@ import * as THREE from 'three'
 
 import { BackgroundStars } from './BackgroundStars'
 import { RepoPlanet } from './RepoPlanet'
-import type { RepoData } from '../hooks/useGithubData'
+import type { RepoData } from '../../../types/github'
 
 function Loader() {
-  const { progress } = useProgress()
+  useProgress()
   return (
     <Html center>
       <div className="loader-container" style={{ background: 'transparent', color: 'white' }}>
@@ -93,8 +93,7 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
       </div>
 
       <Canvas
-        eventSource={containerRef}
-        style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}
+        style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'auto' }}
         camera={{ position: [0, 5, 25], fov: 45 }}
         dpr={Math.min(window.devicePixelRatio, 1.5)}
         performance={{ min: 0.5 }}
@@ -129,9 +128,9 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
           <Environment files="/models/monochrome_studio_02_1k.hdr" background={false} />
           <EffectComposer enableNormalPass={false} multisampling={0}>
             <Bloom
-              luminanceThreshold={1.5}
+              luminanceThreshold={1.2}
               mipmapBlur
-              intensity={3.0}
+              intensity={1.5}
             />
           </EffectComposer>
         </Suspense>

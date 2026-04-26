@@ -1,8 +1,8 @@
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useGLTF, Text, Billboard, useTexture } from '@react-three/drei'
+import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import type { RepoData } from '../hooks/useGithubData'
+import type { RepoData } from '../../../types/github'
 import { SaturnRing } from './SaturnRingProps'
 
 interface RepoPlanetProps {
@@ -31,8 +31,8 @@ function PlanetAsteroidBelt({ count, radius }: { count: number; radius: number }
   const { scene } = useGLTF('/models/asteroids_pack_rocky_version.glb')
 
   const { geometry, material } = useMemo(() => {
-    let geo = null
-    let mat = null
+    let geo: THREE.BufferGeometry | null = null
+    let mat: THREE.Material | THREE.Material[] | null = null
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && !geo) {
         geo = (child as THREE.Mesh).geometry
@@ -63,7 +63,7 @@ function PlanetAsteroidBelt({ count, radius }: { count: number; radius: number }
   if (!geometry) return null
 
   return (
-    <instancedMesh ref={meshRef} args={[geometry, material, count]} frustumCulled={false} />
+    <instancedMesh ref={meshRef} args={[geometry, material || undefined, count]} frustumCulled={false} />
   )
 }
 
@@ -73,16 +73,17 @@ function IssueAsteroids({ count, radius }: { count: number; radius: number }) {
   const { scene } = useGLTF('/models/asteroids_pack_rocky_version.glb')
 
   const { geometry, material } = useMemo(() => {
-    let geo = null
-    let mat = null
+    let geo: THREE.BufferGeometry | null = null
+    let mat: THREE.Material | THREE.Material[] | null = null
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && !geo) {
         geo = (child as THREE.Mesh).geometry
         mat = ((child as THREE.Mesh).material as THREE.MeshStandardMaterial).clone()
         // Make it red emissive
-        mat.color = new THREE.Color('#330000')
-        mat.emissive = new THREE.Color('#0051ffff')
-        mat.emissiveIntensity = 2.0
+        const stdMat = mat as THREE.MeshStandardMaterial;
+        stdMat.color = new THREE.Color('#330000')
+        stdMat.emissive = new THREE.Color('#0051ffff')
+        stdMat.emissiveIntensity = 2.0
       }
     })
     return { geometry: geo, material: mat }
@@ -118,8 +119,8 @@ function IssueAsteroids({ count, radius }: { count: number; radius: number }) {
 
   return (
     <group ref={groupRef}>
-      {/* @ts-ignore */}
-      <instancedMesh ref={meshRef} args={[geometry, material, count]} frustumCulled={false} />
+
+      <instancedMesh ref={meshRef} args={[geometry, material || undefined, count]} frustumCulled={false} />
     </group>
   )
 }
@@ -137,11 +138,9 @@ export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: R
         if (obj instanceof THREE.Mesh) {
           if (obj.material) {
             const mat = obj.material.clone()
-            if (mat.emissive) {
-              if (mat.emissive.getHex() === 0) {
-                mat.emissive.copy(mat.color || new THREE.Color(0xffffff))
-              }
-              mat.emissiveIntensity = 2.0 // Boost for HDR threshold
+            // Only boost emissive slightly if it already has one, don't force it on everything
+            if (mat.emissive && mat.emissive.getHex() !== 0) {
+              mat.emissiveIntensity = 1.5
             }
             obj.material = mat
           }

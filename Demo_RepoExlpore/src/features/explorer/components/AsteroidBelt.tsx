@@ -17,8 +17,8 @@ export function AsteroidBelt({ count, radius, onAsteroidClick }: AsteroidBeltPro
   
   // Extract geometry and material from the loaded GLB
   const { geometry, material } = useMemo(() => {
-    let geo = null
-    let mat = null
+    let geo: THREE.BufferGeometry | null = null
+    let mat: THREE.Material | THREE.Material[] | null = null
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh && !geo) {
         geo = (child as THREE.Mesh).geometry
@@ -59,6 +59,7 @@ export function AsteroidBelt({ count, radius, onAsteroidClick }: AsteroidBeltPro
     }
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleClick = (e: any) => {
     e.stopPropagation()
     if (onAsteroidClick) {
@@ -80,10 +81,10 @@ export function AsteroidBelt({ count, radius, onAsteroidClick }: AsteroidBeltPro
 
   return (
     <group ref={groupRef}>
-      {/* @ts-ignore */}
+
       <instancedMesh
         ref={meshRef}
-        args={[geometry, material, count]}
+        args={[geometry, material || undefined, count]}
         frustumCulled={false}
         onClick={handleClick}
         onPointerOver={(e) => {
