@@ -131,8 +131,9 @@ export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: R
   const { scene: planetScene } = useGLTF('/models/purple_planet.glb')
   const clonedPlanetScene = useMemo(() => planetScene.clone(), [planetScene]);
 
-  // Set emissive settings for HDR Bloom
+  // Set emissive settings for HDR Bloom and handle memory cleanup
   useEffect(() => {
+    const materialsToDispose: THREE.Material[] = [];
     if (clonedPlanetScene) {
       clonedPlanetScene.traverse((obj) => {
         if (obj instanceof THREE.Mesh) {
@@ -143,10 +144,14 @@ export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: R
               mat.emissiveIntensity = 1.5
             }
             obj.material = mat
+            materialsToDispose.push(mat);
           }
         }
       });
     }
+    return () => {
+      materialsToDispose.forEach(mat => mat.dispose());
+    };
   }, [clonedPlanetScene]);
 
   const totalPopularity = repo.stargazers_count + repo.forks_count

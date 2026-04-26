@@ -99,7 +99,7 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
         performance={{ min: 0.5 }}
       >
         <ambientLight intensity={0.4} />
-        <spotLight position={[10, 20, 10]} intensity={1.5} angle={0.3} penumbra={1} castShadow />
+        <spotLight position={[10, 20, 10]} intensity={1.5} angle={0.3} penumbra={1} />
         <pointLight position={[-10, -10, -10]} intensity={0.5} />
         <directionalLight
           position={[-50, 20, 50]}

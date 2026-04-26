@@ -14,7 +14,7 @@ function RingLayer({ inner, outer, color, opacity, tilt = 0 }: {
 }) {
     return (
         <mesh rotation={[Math.PI / 2, 0, tilt]}>
-            <ringGeometry args={[inner, outer, 256]} />
+            <ringGeometry args={[inner, outer, 64]} />
             <meshBasicMaterial
                 color={color}
                 side={THREE.DoubleSide}
