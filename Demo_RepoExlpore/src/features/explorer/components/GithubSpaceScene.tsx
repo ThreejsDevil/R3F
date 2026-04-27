@@ -23,6 +23,11 @@ function SceneControls({ target }: { target: THREE.Vector3 | null }) {
   const controlsRef = useRef<CameraControls>(null)
 
   useEffect(() => {
+    if (controlsRef.current) {
+      // Normalize rotations to prevent wild spinning after long idle times
+      controlsRef.current.normalizeRotations()
+    }
+
     if (target && controlsRef.current) {
       // Zoom into the selected planet tightly. We approach from slightly right/top
       controlsRef.current.setTarget(target.x, target.y, target.z, true)
@@ -70,6 +75,23 @@ function SceneFog({ isSearchMode }: { isSearchMode: boolean }) {
   return <fog attach="fog" args={['#0b0e14', 0, 0.1]} />; // Deep space dark matching background
 }
 
+function DistantSun() {
+  // Place it exactly in the direction of the main directional light: [-50, 20, 50]
+  // Scaled by 2 to be further away: [-100, 40, 100]
+  // Emissive intensity is high to ensure it blooms even with fog distance
+  return (
+    <mesh position={[-100, 40, 100]}>
+      <sphereGeometry args={[3, 16, 16]} />
+      <meshStandardMaterial
+        emissive="#ff6b3d"
+        emissiveIntensity={12}
+        toneMapped={false}
+        color="#000000"
+      />
+    </mesh>
+  )
+}
+
 export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible = false }: GithubSpaceSceneProps) {
   const [zoomTarget, setZoomTarget] = useState<THREE.Vector3 | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -112,6 +134,7 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
           <SceneControls target={zoomTarget} />
 
           <BackgroundStars count={starCount} />
+          {/* <DistantSun /> */}
 
           {repos.map((repo, idx) => (
             <RepoPlanet

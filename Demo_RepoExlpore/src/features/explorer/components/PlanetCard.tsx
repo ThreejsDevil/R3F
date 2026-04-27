@@ -91,7 +91,7 @@ export function PlanetCard({
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-neumorph-mark flex flex-col justify-between">
               <div className="font-jetbrains text-[10px] tracking-widest text-text-muted mb-2 flex items-center gap-1.5">
-                <span className="text-accent">◈</span>인력
+                <span className="text-accent">◈</span> Stars
               </div>
               <div className="text-2xl font-semibold tracking-tight">{gravity}</div>
               <div className="font-jetbrains text-[10px] text-accent mt-1">+218</div>
@@ -99,7 +99,7 @@ export function PlanetCard({
 
             <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-neumorph-mark flex flex-col justify-between">
               <div className="font-jetbrains text-[10px] tracking-widest text-text-muted mb-2 flex items-center gap-1.5">
-                <span className="text-accent">◉</span>신호
+                <span className="text-accent">◉</span> Forks
               </div>
               <div className="text-2xl font-semibold tracking-tight">{signal}</div>
               <div className="font-jetbrains text-[10px] text-accent mt-1">+41</div>
@@ -107,7 +107,7 @@ export function PlanetCard({
 
             <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 shadow-neumorph-mark flex flex-col justify-between">
               <div className="font-jetbrains text-[10px] tracking-widest text-text-muted mb-2 flex items-center gap-1.5">
-                <span className="text-accent">◐</span>공전체
+                <span className="text-accent">◐</span> Issues
               </div>
               <div className="text-2xl font-semibold tracking-tight">{orbiters}</div>
               <div className="font-jetbrains text-[10px] text-accent mt-1">12 활동</div>

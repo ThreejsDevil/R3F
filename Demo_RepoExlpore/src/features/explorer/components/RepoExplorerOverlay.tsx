@@ -49,8 +49,8 @@ export function RepoExplorerOverlay({ onSearch, searchComplete, onReveal, isRetu
 
           setTimeout(() => {
             setUiState('hidden');
-          }, 800); // Wait for fade out
-        }, 700); // Wipe in duration
+          }, 400); // Wait for fade out
+        }, 400); // Wipe in duration
       }, loadingDuration);
 
       return () => clearTimeout(timer);
@@ -76,8 +76,8 @@ export function RepoExplorerOverlay({ onSearch, searchComplete, onReveal, isRetu
             setUiState('search');
             setQuery('');
             returnSequenceRef.current = false;
-          }, 800);
-        }, 700);
+          }, 400);
+        }, 400);
       }, 20); // Small delay to let browser process the mount before animating
     }
   }, [isReturning, onReturnComplete]);
