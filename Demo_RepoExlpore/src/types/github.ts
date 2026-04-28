@@ -9,4 +9,5 @@ export interface RepoData {
   open_issues_count: number;
   commits_count: number;
   contributors_count: number;
+  prs_count?: number;
 }

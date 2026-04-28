@@ -158,7 +158,8 @@ export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: R
   const baseScale = 0.5
   const planetScale = baseScale + (totalPopularity / 500000)
 
-  const asteroidCount = 10//Math.min(Math.max(Math.ceil(repo.commits_count / 1000), 10), 40)
+  // PR 수에 비례하여 소행성 개수 설정 (최소 5개, 최대 50개로 제한)
+  const asteroidCount = Math.min(Math.max(Math.ceil((repo.prs_count || 0) / 100), 5), 50)
   const beltRadius = 6
 
   const issueAsteroidCount = Math.min(Math.max(Math.ceil(repo.open_issues_count / 100), 10), 60)

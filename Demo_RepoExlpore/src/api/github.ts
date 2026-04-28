@@ -12,7 +12,8 @@ const MOCK_REPOS: RepoData[] = [
     forks_count: 45000,
     open_issues_count: 1200,
     commits_count: 35000,
-    contributors_count: 1500
+    contributors_count: 1500,
+    prs_count: 8500
   },
 ];
 

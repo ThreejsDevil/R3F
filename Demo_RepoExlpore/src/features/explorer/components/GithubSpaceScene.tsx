@@ -75,21 +75,18 @@ function SceneFog({ isSearchMode }: { isSearchMode: boolean }) {
   return <fog attach="fog" args={['#0b0e14', 0, 0.1]} />; // Deep space dark matching background
 }
 
-function DistantSun() {
-  // Place it exactly in the direction of the main directional light: [-50, 20, 50]
-  // Scaled by 2 to be further away: [-100, 40, 100]
-  // Emissive intensity is high to ensure it blooms even with fog distance
+function DistantSun({ lightRef }: { lightRef: React.RefObject<THREE.Mesh> }) {
   return (
-    <mesh position={[-100, 40, 100]}>
-      <sphereGeometry args={[3, 16, 16]} />
+    <mesh ref={lightRef} position={[-100, 40, 100]}>
+      <sphereGeometry args={[1, 16, 16]} />
       <meshStandardMaterial
         emissive="#ff6b3d"
-        emissiveIntensity={12}
+        emissiveIntensity={30}
         toneMapped={false}
         color="#000000"
       />
     </mesh>
-  )
+  );
 }
 
 export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible = false }: GithubSpaceSceneProps) {
@@ -134,7 +131,7 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
           <SceneControls target={zoomTarget} />
 
           <BackgroundStars count={starCount} />
-          {/* <DistantSun /> */}
+          <DistantSun />
 
           {repos.map((repo, idx) => (
             <RepoPlanet
