@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from '@react-three/fiber'
 import { EffectComposer, Bloom } from '@react-three/postprocessing'
-import { Suspense, useRef, useState, useEffect } from 'react'
+import { Suspense, useRef, useState, useEffect, forwardRef } from 'react'
 import { CameraControls, Environment, Html, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 
@@ -75,19 +75,15 @@ function SceneFog({ isSearchMode }: { isSearchMode: boolean }) {
   return <fog attach="fog" args={['#0b0e14', 0, 0.1]} />; // Deep space dark matching background
 }
 
-function DistantSun({ lightRef }: { lightRef: React.RefObject<THREE.Mesh> }) {
+const DistantSun = forwardRef<THREE.Mesh, any>((props, ref) => {
   return (
-    <mesh ref={lightRef} position={[-100, 40, 100]}>
-      <sphereGeometry args={[1, 16, 16]} />
-      <meshStandardMaterial
-        emissive="#ff6b3d"
-        emissiveIntensity={30}
-        toneMapped={false}
-        color="#000000"
-      />
+    <mesh ref={ref} position={[-100, 40, 100]}>
+      <sphereGeometry args={[1, 10, 10]} />
+      {/* emissive 속성을 가진 StandardMaterial로 변경하여 Bloom 효과를 잘 받도록 함 */}
+      <meshStandardMaterial emissive="#ff8855" emissiveIntensity={30} color="black" toneMapped={false} />
     </mesh>
-  );
-}
+  )
+})
 
 export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible = false }: GithubSpaceSceneProps) {
   const [zoomTarget, setZoomTarget] = useState<THREE.Vector3 | null>(null)
