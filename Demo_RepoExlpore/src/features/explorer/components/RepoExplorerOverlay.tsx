@@ -114,7 +114,7 @@ export function RepoExplorerOverlay({ onSearch, searchComplete, onReveal, isRetu
               <div className="absolute w-[34px] h-[34px] rounded-full border border-[oklch(0.78_0.14_220/0.3)] animate-[orbit-ring_10s_linear_infinite]" />
             </div>
             <div className="text-[13px] tracking-[0.35em] font-medium text-(--text-dim) pl-[0.35em]">
-              GITHUBLE
+              GITHUBBLE
             </div>
           </div>
 

@@ -149,7 +149,7 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
           ))}
 
           <Environment files="/models/monochrome_studio_02_1k.hdr" background={false} />
-          <EffectComposer enableNormalPass={false} multisampling={0}>
+          <EffectComposer enableNormalPass={false} multisampling={4}>
             <Bloom
               luminanceThreshold={1.2}
               mipmapBlur
