@@ -14,6 +14,7 @@ function AppContent() {
   const [hasSearched, setHasSearched] = useState(false)
   const [sceneVisible, setSceneVisible] = useState(false)
   const [isReturning, setIsReturning] = useState(false)
+  const [selectedPart, setSelectedPart] = useState<'planet' | 'commits' | 'prs' | 'issues' | null>(null)
 
   const { data: repos, loading } = useGithubData(searchQuery)
 
@@ -39,11 +40,18 @@ function AppContent() {
           setHasSearched(false);
           setSearchQuery('');
           setIsReturning(false);
+          setSelectedPart(null);
         }}
       />
 
       {/* R3F Scene */}
-      <GithubSpaceScene repos={repos} isSearchMode={!sceneVisible} isSceneVisible={sceneVisible} />
+      <GithubSpaceScene 
+        repos={repos} 
+        isSearchMode={!sceneVisible} 
+        isSceneVisible={sceneVisible}
+        selectedPart={selectedPart}
+        onSelectPart={setSelectedPart}
+      />
 
       {/* Back to Search Button */}
       {sceneVisible && !isReturning && (
@@ -52,6 +60,7 @@ function AppContent() {
           style={{ boxShadow: '4px 4px 12px rgba(0,0,0,0.55), -2px -2px 8px rgba(120,140,200,0.08), inset 0 0 0 1px rgba(255,255,255,0.05)' }}
           onClick={() => {
             setIsReturning(true);
+            setSelectedPart(null);
           }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
@@ -62,12 +71,9 @@ function AppContent() {
       {/* Planet Card */}
       {sceneVisible && repos && repos.length > 0 && (
         <PlanetCard
-          owner={repos[0].full_name?.split('/')[0] || searchQuery.split('/')[0] || "nova"}
-          name={repos[0].name || searchQuery.split('/')[1] || "renderer"}
-          tagline={repos[0].description || "설명이 없습니다."}
-          gravity={repos[0].stargazers_count > 1000 ? (repos[0].stargazers_count / 1000).toFixed(1) + 'k' : String(repos[0].stargazers_count || 0)}
-          signal={repos[0].forks_count > 1000 ? (repos[0].forks_count / 1000).toFixed(1) + 'k' : String(repos[0].forks_count || 0)}
-          orbiters={String(repos[0].open_issues_count || 0)}
+          repo={repos[0]}
+          selectedPart={selectedPart}
+          onSelectPart={setSelectedPart}
         />
       )}
 

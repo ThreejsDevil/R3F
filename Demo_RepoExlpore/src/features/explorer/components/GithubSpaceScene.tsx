@@ -8,6 +8,8 @@ import { BackgroundStars } from './BackgroundStars'
 import { RepoPlanet } from './RepoPlanet'
 import type { RepoData } from '../../../types/github'
 
+type SelectedPart = 'planet' | 'commits' | 'prs' | 'issues' | null;
+
 function Loader() {
   useProgress()
   return (
@@ -19,8 +21,12 @@ function Loader() {
   )
 }
 
-function SceneControls({ target }: { target: THREE.Vector3 | null }) {
+function SceneControls({ target, selectedPart }: { target: THREE.Vector3 | null, selectedPart: SelectedPart }) {
   const controlsRef = useRef<CameraControls>(null)
+
+  // Store the initial position to guarantee exact return
+  const initialPosition = useRef(new THREE.Vector3(0, 5, 25))
+  const initialTarget = useRef(new THREE.Vector3(0, 0, 0))
 
   useEffect(() => {
     if (controlsRef.current) {
@@ -28,16 +34,32 @@ function SceneControls({ target }: { target: THREE.Vector3 | null }) {
       controlsRef.current.normalizeRotations()
     }
 
-    if (target && controlsRef.current) {
-      // Zoom into the selected planet tightly. We approach from slightly right/top
-      controlsRef.current.setTarget(target.x, target.y, target.z, true)
-      controlsRef.current.setPosition(target.x + 3, target.y + 3, target.z + 8, true)
+    if (target && controlsRef.current && selectedPart) {
+      // Zoom into the selected part tightly with distinct views
+      switch (selectedPart) {
+        case 'planet':
+          controlsRef.current.setTarget(target.x, target.y, target.z, true)
+          controlsRef.current.setPosition(target.x + 3, target.y + 2, target.z + 6, true)
+          break;
+        case 'commits':
+          controlsRef.current.setTarget(target.x, target.y, target.z, true)
+          controlsRef.current.setPosition(target.x, target.y + 8, target.z + 10, true)
+          break;
+        case 'prs':
+          controlsRef.current.setTarget(target.x + 4, target.y, target.z + 4, true)
+          controlsRef.current.setPosition(target.x + 8, target.y + 2, target.z + 8, true)
+          break;
+        case 'issues':
+          controlsRef.current.setTarget(target.x - 4, target.y, target.z + 4, true)
+          controlsRef.current.setPosition(target.x - 8, target.y - 1, target.z + 8, true)
+          break;
+      }
     } else if (controlsRef.current) {
-      // Reset to solar system view
-      controlsRef.current.setTarget(0, 0, 0, true)
-      controlsRef.current.setPosition(0, 3, 20, true)
+      // Reset to exact initial solar system view
+      controlsRef.current.setTarget(initialTarget.current.x, initialTarget.current.y, initialTarget.current.z, true)
+      controlsRef.current.setPosition(initialPosition.current.x, initialPosition.current.y, initialPosition.current.z, true)
     }
-  }, [target])
+  }, [target, selectedPart])
 
   useFrame((_, delta) => {
     if (!target && controlsRef.current) {
@@ -61,6 +83,8 @@ export interface GithubSpaceSceneProps {
   repos: RepoData[];
   isSearchMode?: boolean;
   isSceneVisible?: boolean;
+  selectedPart?: SelectedPart;
+  onSelectPart?: (part: SelectedPart) => void;
 }
 
 function SceneFog({ isSearchMode }: { isSearchMode: boolean }) {
@@ -85,9 +109,20 @@ const DistantSun = forwardRef<THREE.Mesh, any>((props, ref) => {
   )
 })
 
-export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible = false }: GithubSpaceSceneProps) {
+export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible = false, selectedPart = null, onSelectPart }: GithubSpaceSceneProps) {
   const [zoomTarget, setZoomTarget] = useState<THREE.Vector3 | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Sync zoom target when selected part changes externally (e.g. from PlanetCard)
+  useEffect(() => {
+    if (!selectedPart) {
+      setZoomTarget(null);
+    } else if (!zoomTarget && repos.length > 0) {
+      // If a part is selected but we don't have a target (e.g. initial load or reset), target the first repo
+      const pos = getRepoPosition(0, repos.length);
+      setZoomTarget(new THREE.Vector3(pos[0], pos[1], pos[2]));
+    }
+  }, [selectedPart]);
 
   // Calculate Stars based on Contributors
   const totalContributors = repos.reduce((sum, r) => sum + r.contributors_count, 0)
@@ -124,7 +159,7 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
 
         <Suspense fallback={<Loader />}>
           <SceneFog isSearchMode={isSearchMode} />
-          <SceneControls target={zoomTarget} />
+          <SceneControls target={zoomTarget} selectedPart={selectedPart} />
 
           <BackgroundStars count={starCount} />
           <DistantSun />
@@ -135,8 +170,14 @@ export function GithubSpaceScene({ repos, isSearchMode = false, isSceneVisible =
               repo={repo}
               position={getRepoPosition(idx, repos.length)}
               isSceneVisible={isSceneVisible}
-              onClick={(pos) => {
-                setZoomTarget(prev => prev && prev.distanceTo(pos) < 0.1 ? null : pos)
+              onClickPart={(part, pos) => {
+                if (selectedPart === part) {
+                  onSelectPart?.(null);
+                  setZoomTarget(null);
+                } else {
+                  onSelectPart?.(part);
+                  setZoomTarget(pos);
+                }
               }}
             />
           ))}

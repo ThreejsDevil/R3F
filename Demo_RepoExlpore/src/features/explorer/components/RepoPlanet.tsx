@@ -5,11 +5,13 @@ import * as THREE from 'three'
 import type { RepoData } from '../../../types/github'
 import { SaturnRing } from './SaturnRingProps'
 
+type SelectedPart = 'planet' | 'commits' | 'prs' | 'issues';
+
 interface RepoPlanetProps {
   repo: RepoData;
   position: [number, number, number];
   isSceneVisible?: boolean;
-  onClick?: (pos: THREE.Vector3, repo: RepoData) => void;
+  onClickPart?: (part: SelectedPart, pos: THREE.Vector3) => void;
 }
 
 function RingSystem({ isVisible, children }: { isVisible: boolean, children: React.ReactNode }) {
@@ -125,8 +127,16 @@ function IssueAsteroids({ count, radius }: { count: number; radius: number }) {
   )
 }
 
-export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: RepoPlanetProps) {
+export function RepoPlanet({ repo, position, isSceneVisible = true, onClickPart }: RepoPlanetProps) {
   const groupRef = useRef<THREE.Group>(null)
+
+  const handlePartClick = (part: SelectedPart) => {
+    if (onClickPart && groupRef.current) {
+      const pos = new THREE.Vector3()
+      groupRef.current.getWorldPosition(pos)
+      onClickPart(part, pos)
+    }
+  }
 
   const { scene: planetScene } = useGLTF('/models/purple_planet.glb')
   const clonedPlanetScene = useMemo(() => planetScene.clone(), [planetScene]);
@@ -174,14 +184,6 @@ export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: R
   return (
     <group
       position={position}
-      onClick={(e) => {
-        e.stopPropagation()
-        if (onClick && groupRef.current) {
-          const pos = new THREE.Vector3()
-          groupRef.current.getWorldPosition(pos)
-          onClick(pos, repo)
-        }
-      }}
       onPointerOver={(e) => {
         e.stopPropagation()
         document.body.style.cursor = 'pointer'
@@ -191,13 +193,22 @@ export function RepoPlanet({ repo, position, isSceneVisible = true, onClick }: R
       }}
     >
       <group ref={groupRef}>
-        <primitive object={clonedPlanetScene} scale={[planetScale, planetScale, planetScale]} />
+        <group onClick={(e) => { e.stopPropagation(); handlePartClick('planet'); }}>
+          <primitive object={clonedPlanetScene} scale={[planetScale, planetScale, planetScale]} />
+        </group>
         <RingSystem isVisible={isSceneVisible}>
-          <PlanetAsteroidBelt count={asteroidCount} radius={beltRadius} />
-          <SaturnRing planetScale={planetScale} commitsCount={repo.commits_count} />
+          <group onClick={(e) => { e.stopPropagation(); handlePartClick('prs'); }}>
+            <PlanetAsteroidBelt count={asteroidCount} radius={beltRadius} />
+          </group>
+          
+          <group onClick={(e) => { e.stopPropagation(); handlePartClick('commits'); }}>
+            <SaturnRing planetScale={planetScale} commitsCount={repo.commits_count} />
+          </group>
 
           {issueAsteroidCount > 0 && (
-            <IssueAsteroids count={issueAsteroidCount} radius={issueRadius} />
+            <group onClick={(e) => { e.stopPropagation(); handlePartClick('issues'); }}>
+              <IssueAsteroids count={issueAsteroidCount} radius={issueRadius} />
+            </group>
           )}
         </RingSystem>
       </group>
